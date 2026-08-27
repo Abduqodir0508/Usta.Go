@@ -22,20 +22,20 @@ export default function Dashboard() {
   ]);
 
   return (
-    <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-6">
+    <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-6 pt-24 min-h-screen">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Boshqaruv Paneli</h1>
-          <p className="text-sm text-slate-500">UstaGo profilingizni va buyurtmalarni boshqaring.</p>
+          <h1 className="text-2xl font-bold text-foreground">Boshqaruv Paneli</h1>
+          <p className="text-sm text-muted-foreground">UstaGo profilingizni va buyurtmalarni boshqaring.</p>
         </div>
-        <div className="bg-[#1E40AF]/10 text-[#1E40AF] px-4 py-2 rounded-xl font-medium text-sm flex items-center gap-2 w-fit">
+        <div className="bg-amber-500/10 text-amber-500 border border-amber-500/20 px-4 py-2 rounded-xl font-medium text-sm flex items-center gap-2 w-fit">
           <CheckCircle2 className="w-4 h-4" />
           Tarif: Faol (12 kun qoldi)
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex bg-slate-100 p-1 rounded-2xl overflow-x-auto scrollbar-hide">
+      <div className="flex bg-surface-hover p-1 rounded-2xl overflow-x-auto scrollbar-hide border border-border-color">
         {TABS.map((tab) => (
           <button
             key={tab.id}
@@ -43,8 +43,8 @@ export default function Dashboard() {
             className={cn(
               "flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-medium transition-all",
               activeTab === tab.id
-                ? "bg-white text-slate-900 shadow-sm"
-                : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
+                ? "bg-surface text-foreground shadow-sm border border-border-color"
+                : "text-muted-foreground hover:text-foreground hover:bg-surface-hover"
             )}
           >
             <tab.icon className="w-4 h-4" />
@@ -54,33 +54,33 @@ export default function Dashboard() {
       </div>
 
       {/* Content Area */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-6 min-h-[400px]">
+      <div className="bg-surface border border-border-color rounded-2xl p-6 min-h-[400px]">
         
         {/* ORDERS TAB */}
         {activeTab === "orders" && (
           <div className="space-y-4">
-            <h2 className="text-lg font-bold text-slate-900 mb-4">Mijozlar buyurtmalari</h2>
+            <h2 className="text-lg font-bold text-foreground mb-4">Mijozlar buyurtmalari</h2>
             {orders.length === 0 ? (
-              <div className="text-center py-10 text-slate-500">
+              <div className="text-center py-10 text-muted-foreground">
                 Hozircha yangi buyurtmalar yo'q.
               </div>
             ) : (
               <div className="space-y-3">
                 {orders.map((order) => (
-                  <div key={order.id} className="border border-slate-100 rounded-xl p-4 flex flex-col sm:flex-row gap-4 sm:items-center justify-between hover:border-blue-100 transition-colors">
+                  <div key={order.id} className="border border-border-color rounded-xl p-4 flex flex-col sm:flex-row gap-4 sm:items-center justify-between hover:border-amber-500/30 bg-background transition-colors">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-bold text-slate-900">{order.client}</h3>
-                        <span className="text-xs text-slate-400">{order.date}</span>
+                        <h3 className="font-bold text-foreground">{order.client}</h3>
+                        <span className="text-xs text-muted-foreground">{order.date}</span>
                       </div>
-                      <p className="text-sm text-slate-600 mb-2">{order.issue}</p>
+                      <p className="text-sm text-muted-foreground mb-2">{order.issue}</p>
                       
                       <div className="flex items-center gap-2">
                         <span className={cn(
                           "px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider",
-                          order.status === "new" && "bg-orange-100 text-orange-700",
-                          order.status === "in_progress" && "bg-blue-100 text-blue-700",
-                          order.status === "completed" && "bg-green-100 text-green-700"
+                          order.status === "new" && "bg-orange-500/20 text-orange-500",
+                          order.status === "in_progress" && "bg-blue-500/20 text-blue-500",
+                          order.status === "completed" && "bg-green-500/20 text-green-500"
                         )}>
                           {order.status === "new" ? "Yangi" : order.status === "in_progress" ? "Jarayonda" : "Yakunlangan"}
                         </span>
@@ -88,10 +88,10 @@ export default function Dashboard() {
                     </div>
                     
                     <div className="flex items-center gap-2">
-                      <a href={`tel:${order.phone}`} className="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors">
+                      <a href={`tel:${order.phone}`} className="p-2.5 bg-surface hover:bg-surface-hover text-foreground border border-border-color rounded-lg transition-colors">
                         <Phone className="w-4 h-4" />
                       </a>
-                      <button className="px-4 py-2 bg-[#EA580C] hover:bg-[#c2410c] text-white text-sm font-medium rounded-lg transition-colors">
+                      <button className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white text-sm font-bold rounded-lg transition-colors shadow-lg shadow-orange-500/20">
                         Qabul qilish
                       </button>
                     </div>
@@ -105,16 +105,16 @@ export default function Dashboard() {
         {/* PROFILE TAB */}
         {activeTab === "profile" && (
           <div className="space-y-6 max-w-2xl">
-            <h2 className="text-lg font-bold text-slate-900">Shaxsiy ma'lumotlar</h2>
+            <h2 className="text-lg font-bold text-foreground">Shaxsiy ma'lumotlar</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-slate-700">Ism va Familiya</label>
-                <input type="text" defaultValue="Alisher Usta" className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1E40AF]" />
+                <label className="text-sm font-medium text-muted-foreground">Ism va Familiya</label>
+                <input type="text" defaultValue="Alisher Usta" className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500" />
               </div>
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-slate-700">Mutaxassislik</label>
-                <select className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1E40AF]">
+                <label className="text-sm font-medium text-muted-foreground">Mutaxassislik</label>
+                <select className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500">
                   <option>Santexnik</option>
                   <option>Elektrik</option>
                   <option>Mebelchi</option>
@@ -123,22 +123,22 @@ export default function Dashboard() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-700">O'zingiz haqingizda</label>
-              <textarea rows={4} defaultValue="Assalomu alaykum! Men 8 yillik tajribaga ega santexnikman." className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1E40AF]"></textarea>
+              <label className="text-sm font-medium text-muted-foreground">O'zingiz haqingizda</label>
+              <textarea rows={4} defaultValue="Assalomu alaykum! Men 8 yillik tajribaga ega santexnikman." className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-slate-700">Telefon raqam</label>
-                <input type="tel" defaultValue="+998901234567" className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1E40AF]" />
+                <label className="text-sm font-medium text-muted-foreground">Telefon raqam</label>
+                <input type="tel" defaultValue="+998901234567" className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500" />
               </div>
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-slate-700">Telegram Username</label>
-                <input type="text" defaultValue="@alisher_usta" className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1E40AF]" />
+                <label className="text-sm font-medium text-muted-foreground">Telegram Username</label>
+                <input type="text" defaultValue="@alisher_usta" className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500" />
               </div>
             </div>
 
-            <div className="pt-4 border-t border-slate-100">
+            <div className="pt-4 border-t border-border-color">
               <label className="flex items-center gap-3 cursor-pointer">
                 <div className="relative flex items-center">
                   <input 
@@ -147,20 +147,20 @@ export default function Dashboard() {
                     checked={hasInstagram}
                     onChange={(e) => setHasInstagram(e.target.checked)}
                   />
-                  <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#1E40AF]"></div>
+                  <div className="w-11 h-6 bg-surface-hover border border-border-color peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
                 </div>
-                <span className="text-sm font-medium text-slate-700">Instagram sahifani ulash</span>
+                <span className="text-sm font-medium text-foreground">Instagram sahifani ulash</span>
               </label>
               
               {hasInstagram && (
                 <div className="mt-4 animate-in fade-in slide-in-from-top-2">
-                  <input type="url" placeholder="https://instagram.com/..." className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1E40AF]" />
+                  <input type="url" placeholder="https://instagram.com/..." className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500" />
                 </div>
               )}
             </div>
 
             <div className="pt-4 flex justify-end">
-              <button className="bg-[#1E40AF] hover:bg-blue-800 text-white px-6 py-2.5 rounded-xl font-medium transition-colors">
+              <button className="bg-amber-500 hover:bg-amber-600 text-white px-6 py-2.5 rounded-xl font-bold transition-colors">
                 Saqlash
               </button>
             </div>
@@ -171,20 +171,20 @@ export default function Dashboard() {
         {activeTab === "portfolio" && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-slate-900">Bajargan ishlar rasmlari</h2>
+              <h2 className="text-lg font-bold text-foreground">Bajargan ishlar rasmlari</h2>
             </div>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <button className="aspect-square rounded-2xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-500 hover:text-[#1E40AF] hover:border-[#1E40AF] hover:bg-blue-50 transition-colors group">
+              <button className="aspect-square rounded-2xl border-2 border-dashed border-border-color bg-background flex flex-col items-center justify-center text-muted-foreground hover:text-amber-500 hover:border-amber-500 transition-colors group">
                 <UploadCloud className="w-8 h-8 mb-2 group-hover:scale-110 transition-transform" />
                 <span className="text-sm font-medium">Rasm yuklash</span>
               </button>
               
               {[1, 2, 3].map((i) => (
-                <div key={i} className="aspect-square rounded-2xl bg-slate-100 relative group overflow-hidden border border-slate-200">
+                <div key={i} className="aspect-square rounded-2xl bg-background relative group overflow-hidden border border-border-color">
                   <img src={`https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=400`} alt="portfolio" className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <button className="bg-white/90 text-red-500 p-2 rounded-full hover:bg-white hover:text-red-600 transition-colors">
+                    <button className="bg-surface/90 text-red-500 p-2 rounded-full hover:bg-surface hover:text-red-600 transition-colors shadow-lg">
                       <XCircle className="w-6 h-6" />
                     </button>
                   </div>

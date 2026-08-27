@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Language } from "@/lib/dictionary";
 import { AuthModal } from "@/components/modals/AuthModal";
+import { AiModal } from "@/components/modals/AiModal";
 
 const LANGUAGES: Language[] = ["UZ", "RU", "EN"];
 
@@ -17,6 +18,7 @@ export function TopNavbar() {
   const [mounted, setMounted] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isAiOpen, setIsAiOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -39,7 +41,7 @@ export function TopNavbar() {
           
           {/* Brand */}
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#EA580C] to-[#F59E0B] flex items-center justify-center shadow-lg group-hover:shadow-[#EA580C]/20 transition-all">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center shadow-lg group-hover:shadow-orange-500/20 transition-all">
               <Wrench className="w-5 h-5 text-white" />
             </div>
             <span className="text-xl font-bold tracking-tight text-foreground">
@@ -49,10 +51,15 @@ export function TopNavbar() {
 
           {/* Desktop Nav Links */}
           <nav className="hidden md:flex items-center gap-8">
-            <Link href="#features" className="text-sm font-medium text-foreground opacity-70 hover:opacity-100 transition-opacity">{t.navbar.features}</Link>
-            <Link href="#ai-assistant" className="text-sm font-medium text-foreground opacity-70 hover:opacity-100 transition-opacity">{t.navbar.aiAssistant}</Link>
-            <Link href="/search" className="text-sm font-medium text-foreground opacity-70 hover:opacity-100 transition-opacity">{t.navbar.directory}</Link>
-            <Link href="#faq" className="text-sm font-medium text-foreground opacity-70 hover:opacity-100 transition-opacity">{t.navbar.faq}</Link>
+            <button onClick={() => setIsAiOpen(true)} className="text-sm font-medium text-foreground opacity-70 hover:opacity-100 transition-opacity">
+              {t.navbar.aiAssistant}
+            </button>
+            <Link href="/katalog" className="text-sm font-medium text-foreground opacity-70 hover:opacity-100 transition-opacity">
+              {t.navbar.directory}
+            </Link>
+            <Link href="#faq" className="text-sm font-medium text-foreground opacity-70 hover:opacity-100 transition-opacity">
+              {t.navbar.faq}
+            </Link>
           </nav>
 
           {/* Right Controls */}
@@ -109,6 +116,7 @@ export function TopNavbar() {
 
       {/* Modals */}
       <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
+      <AiModal isOpen={isAiOpen} onClose={() => setIsAiOpen(false)} />
     </>
   );
 }

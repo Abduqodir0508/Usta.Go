@@ -18,7 +18,7 @@ export const dictionary = {
       howItWorks: "Qanday ishlaydi?"
     },
     categories: {
-      all: "Hammasi",
+      all: "Barchasi",
       plumber: "Santexnik",
       electrician: "Elektrik",
       furniture: "Mebelchi",
@@ -47,12 +47,36 @@ export const dictionary = {
       aiMessage: "Sizga yaqin joylashgan 3 ta eng reytingi baland santexnik topildi:\n1. Alisher Usta (⭐ 4.9, 15 daqiqada yetib boradi) — Narxi: 50,000 so'mdan.\nBog'lanish tugmasini bosing."
     },
     search: {
-      placeholder: "Kimi qidiryapsiz?",
+      placeholder: "O'zingizga kerakli mutaxassisni toping...",
       searchBtn: "Izlash",
       results: "ta natija topildi",
       noResults: "Natija topilmadi",
       startingPrice: "Boshlang'ich narx",
-      viewProfile: "Profilni ko'rish"
+      viewProfile: "Profilni ko'rish",
+      title: "Ustalar katalogi"
+    },
+    auth: {
+      clientTab: "Mijoz sifatida",
+      masterTab: "Usta sifatida",
+      clientTitle: "Mijoz sifatida kirish",
+      clientDesc: "Usta chaqirish uchun tizimga kiring",
+      namePlaceholder: "Ism va Familiya",
+      phonePlaceholder: "Telefon raqam (+998...)",
+      loginBtn: "Kirish",
+      masterTitle: "Usta sifatida kirish",
+      masterDesc: "O'z kabinetingizga kiring",
+      emailPlaceholder: "Email / Telefon",
+      passwordPlaceholder: "Parol",
+      masterLoginBtn: "Usta kabinetiga kirish",
+      registerLink: "Yangi usta sifatida ro'yxatdan o'tish"
+    },
+    aiChat: {
+      title: "AI Maslahatchi",
+      status: "Onlayn",
+      greeting: "Assalomu alaykum! Sizga qanday yordam bera olaman? Muammoingizni yozing.",
+      placeholder: "Muammoingizni yozing (masalan: jo'mrak oqyapti)...",
+      contactBtn: "Bog'lanish",
+      profileBtn: "Profil"
     }
   },
   RU: {
@@ -101,12 +125,36 @@ export const dictionary = {
       aiMessage: "Найдены 3 сантехника с самым высоким рейтингом поблизости:\n1. Алишер Уста (⭐ 4.9, приедет через 15 минут) — Цена: от 50,000 сум.\nНажмите кнопку для связи."
     },
     search: {
-      placeholder: "Кого вы ищете?",
+      placeholder: "Найдите нужного специалиста...",
       searchBtn: "Поиск",
       results: "результатов найдено",
       noResults: "Результатов не найдено",
       startingPrice: "Начальная цена",
-      viewProfile: "Профиль"
+      viewProfile: "Профиль",
+      title: "Каталог мастеров"
+    },
+    auth: {
+      clientTab: "Как клиент",
+      masterTab: "Как мастер",
+      clientTitle: "Вход для клиента",
+      clientDesc: "Войдите, чтобы вызвать мастера",
+      namePlaceholder: "Имя и Фамилия",
+      phonePlaceholder: "Номер телефона (+998...)",
+      loginBtn: "Войти",
+      masterTitle: "Вход для мастера",
+      masterDesc: "Войдите в личный кабинет",
+      emailPlaceholder: "Email / Телефон",
+      passwordPlaceholder: "Пароль",
+      masterLoginBtn: "Войти в кабинет",
+      registerLink: "Зарегистрироваться как мастер"
+    },
+    aiChat: {
+      title: "AI Помощник",
+      status: "Онлайн",
+      greeting: "Здравствуйте! Как я могу вам помочь? Опишите вашу проблему.",
+      placeholder: "Опишите проблему (например: течет кран)...",
+      contactBtn: "Связаться",
+      profileBtn: "Профиль"
     }
   },
   EN: {
@@ -155,12 +203,36 @@ export const dictionary = {
       aiMessage: "Found 3 top-rated plumbers nearby:\n1. Alisher Master (⭐ 4.9, arrives in 15 mins) — Price: from 50,000 UZS.\nClick to contact."
     },
     search: {
-      placeholder: "Who are you looking for?",
+      placeholder: "Find the specialist you need...",
       searchBtn: "Search",
       results: "results found",
       noResults: "No results found",
       startingPrice: "Starting price",
-      viewProfile: "View Profile"
+      viewProfile: "View Profile",
+      title: "Masters Directory"
+    },
+    auth: {
+      clientTab: "As Client",
+      masterTab: "As Master",
+      clientTitle: "Client Login",
+      clientDesc: "Log in to hire a master",
+      namePlaceholder: "Full Name",
+      phonePlaceholder: "Phone Number (+998...)",
+      loginBtn: "Log In",
+      masterTitle: "Master Login",
+      masterDesc: "Log in to your dashboard",
+      emailPlaceholder: "Email / Phone",
+      passwordPlaceholder: "Password",
+      masterLoginBtn: "Go to Dashboard",
+      registerLink: "Register as a new Master"
+    },
+    aiChat: {
+      title: "AI Assistant",
+      status: "Online",
+      greeting: "Hello! How can I help you today? Describe your problem.",
+      placeholder: "Describe your problem (e.g. leaking faucet)...",
+      contactBtn: "Contact",
+      profileBtn: "Profile"
     }
   }
 };
