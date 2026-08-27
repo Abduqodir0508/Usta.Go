@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
-import { Sun, Moon, Wrench, Globe } from "lucide-react";
+import { Wrench, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Language } from "@/lib/dictionary";
@@ -13,7 +12,6 @@ import { AiModal } from "@/components/modals/AiModal";
 const LANGUAGES: Language[] = ["UZ", "RU", "EN"];
 
 export function TopNavbar() {
-  const { theme, setTheme } = useTheme();
   const { language, setLanguage, t } = useLanguage();
   const [mounted, setMounted] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -64,16 +62,6 @@ export function TopNavbar() {
 
           {/* Right Controls */}
           <div className="flex items-center gap-4">
-            
-            {/* Theme Toggle */}
-            {mounted && (
-              <button
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="w-9 h-9 rounded-full flex items-center justify-center border border-border-color hover:bg-surface-hover text-foreground transition-colors"
-              >
-                {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-              </button>
-            )}
 
             {/* Language Switcher */}
             <div className="hidden sm:flex items-center gap-1 border border-border-color rounded-full p-1 bg-surface">

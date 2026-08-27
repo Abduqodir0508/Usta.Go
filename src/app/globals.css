@@ -17,16 +17,7 @@
 }
 
 :root {
-  /* Light Mode */
-  --background: #E5DBD2; /* Deep Warm Taupe / Mocha Beige */
-  --foreground: #120E0C; /* Deep Dark Charcoal/Black */
-  --surface: #EDE3D9; /* Soft Warm Coffee Surface */
-  --surface-hover: #DDD1C4; /* Secondary / Ghost Buttons */
-  --border-color: #CBBDB0; /* Border Color */
-}
-
-:root[class~="dark"] {
-  /* Dark Mode */
+  /* Permanent Dark Espresso Mode */
   --background: #0D0B0A; /* Warm Espresso Black */
   --foreground: #FDFDFD; /* Bright Crisp White */
   --surface: #1A1614; /* Soft dark zinc/slate */
