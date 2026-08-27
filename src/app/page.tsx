@@ -62,14 +62,14 @@ export default function Home() {
         
         <div className="grid md:grid-cols-2 gap-8">
           {/* Oldin / Qiyin */}
-          <div className="glass bg-red-50/50 dark:bg-red-950/20 border-red-100 dark:border-red-900/30 rounded-3xl p-8 space-y-6">
-            <h3 className="text-xl font-bold text-red-600 dark:text-red-400 flex items-center gap-2">
+          <div className="glass bg-[#FDF2F2] dark:bg-red-950/20 border-red-200 dark:border-red-900/30 rounded-3xl p-8 space-y-6">
+            <h3 className="text-xl font-bold text-red-800 dark:text-red-400 flex items-center gap-2">
               <span className="p-1 bg-red-100 dark:bg-red-900/50 rounded-md">❌</span>
               {t.comparison.beforeTitle}
             </h3>
             <ul className="space-y-4">
               {[t.comparison.before1, t.comparison.before2, t.comparison.before3, t.comparison.before4].map((text, i) => (
-                <li key={i} className="flex items-start gap-3 text-slate-700 dark:text-slate-300">
+                <li key={i} className="flex items-start gap-3 text-stone-800 dark:text-slate-300">
                   <div className="w-1.5 h-1.5 rounded-full bg-red-400 mt-2 flex-shrink-0" />
                   <span>{text}</span>
                 </li>
@@ -78,17 +78,17 @@ export default function Home() {
           </div>
           
           {/* UstaGo Bilan */}
-          <div className="glass bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/30 rounded-3xl p-8 space-y-6 relative overflow-hidden">
+          <div className="glass bg-[#FEF3C7] dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/30 rounded-3xl p-8 space-y-6 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-8 opacity-5">
               <Wrench className="w-32 h-32 text-amber-500" />
             </div>
-            <h3 className="text-xl font-bold text-amber-600 dark:text-amber-400 flex items-center gap-2 relative z-10">
+            <h3 className="text-xl font-bold text-amber-900 dark:text-amber-400 flex items-center gap-2 relative z-10">
               <span className="p-1 bg-amber-100 dark:bg-amber-900/50 rounded-md">✅</span>
               {t.comparison.afterTitle}
             </h3>
             <ul className="space-y-4 relative z-10">
               {[t.comparison.after1, t.comparison.after2, t.comparison.after3, t.comparison.after4].map((text, i) => (
-                <li key={i} className="flex items-start gap-3 text-slate-800 dark:text-slate-200 font-medium">
+                <li key={i} className="flex items-start gap-3 text-stone-800 dark:text-slate-200 font-medium">
                   <div className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-2 flex-shrink-0" />
                   <span>{text}</span>
                 </li>
@@ -112,7 +112,7 @@ export default function Home() {
               </h2>
               <ul className="space-y-6">
                 {[t.aiShowcase.feature1, t.aiShowcase.feature2, t.aiShowcase.feature3].map((feature, i) => (
-                  <li key={i} className="flex items-center gap-4 text-lg text-slate-700 dark:text-slate-300">
+                  <li key={i} className="flex items-center gap-4 text-lg text-stone-800 dark:text-slate-300">
                     <div className="w-10 h-10 rounded-xl bg-surface flex items-center justify-center border border-border-color shadow-sm flex-shrink-0">
                       <BadgeCheck className="w-5 h-5 text-amber-500" />
                     </div>

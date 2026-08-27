@@ -18,11 +18,11 @@
 
 :root {
   /* Light Mode */
-  --background: #FAF8F5; /* Soft Cream White */
-  --foreground: #1C1917; /* Deep Charcoal */
-  --surface: #FFFFFF; /* Pure White */
-  --surface-hover: #F5F5F4;
-  --border-color: #E7E5E4; /* stone-200 */
+  --background: #F5EFEB; /* Soft Warm Latte / Sand Beige */
+  --foreground: #1C130D; /* Deep Espresso Brown */
+  --surface: #FAF6F0; /* Warm Cream Card Surface */
+  --surface-hover: #F2ECE6; 
+  --border-color: #D6D3D1; /* stone-300 */
 }
 
 :root[class~="dark"] {
