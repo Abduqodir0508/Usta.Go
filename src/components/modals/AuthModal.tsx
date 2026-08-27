@@ -41,8 +41,16 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   const handleMasterLogin = () => {
     if (masterLogin && masterPassword) {
-      onClose();
-      router.push("/master-dashboard");
+      const storedMasters = JSON.parse(localStorage.getItem('usta_masters') || '[]');
+      const validMaster = storedMasters.find((m: any) => m.login === masterLogin && m.password === masterPassword);
+      
+      if (validMaster) {
+        localStorage.setItem("usta_current_master", JSON.stringify(validMaster));
+        onClose();
+        router.push("/master-dashboard");
+      } else {
+        alert("Login yoki parol xato!");
+      }
     }
   };
 

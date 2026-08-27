@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { Users, UserPlus, Activity, Search, Shield, Trash2, Edit2, LogOut } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Users, UserPlus, Activity, Search, Shield, Trash2, Edit2, LogOut, CheckCircle2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
-const MOCK_MASTERS = [
-  { id: 1, name: "Aziz Rakhimov", category: "Santexnik", phone: "+998 90 123 45 67", status: "active" },
-  { id: 2, name: "Sardor Aliyev", category: "Elektrik", phone: "+998 93 987 65 43", status: "active" },
+const INITIAL_MASTERS = [
+  { id: 1, name: "Aziz Rakhimov", category: "Santexnik", phone: "+998 90 123 45 67", status: "active", telegram: "@aziz_usta", address: "Yunusobod", price: "150000", login: "aziz123", password: "123" },
+  { id: 2, name: "Sardor Aliyev", category: "Elektrik", phone: "+998 93 987 65 43", status: "active", telegram: "@sardor_elektr", address: "Chilonzor", price: "100000", login: "sardor123", password: "123" },
 ];
 
 const MOCK_ACTIVITY = [
@@ -18,13 +18,82 @@ const MOCK_ACTIVITY = [
 export default function SuperAdminPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'masters' | 'add' | 'activity'>('masters');
+  
+  const [mastersList, setMastersList] = useState<any[]>([]);
+  const [toastMessage, setToastMessage] = useState("");
+
+  // Form State
+  const [formData, setFormData] = useState({
+    name: "", category: "", phone: "", telegram: "", address: "", price: "", login: "", password: ""
+  });
+
+  useEffect(() => {
+    const stored = localStorage.getItem("usta_masters");
+    if (stored) {
+      setMastersList(JSON.parse(stored));
+    } else {
+      localStorage.setItem("usta_masters", JSON.stringify(INITIAL_MASTERS));
+      setMastersList(INITIAL_MASTERS);
+    }
+  }, []);
 
   const handleLogout = () => {
     router.push("/");
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleAddMaster = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name || !formData.category || !formData.phone || !formData.login || !formData.password) {
+      alert("Iltimos, barcha majburiy maydonlarni to'ldiring!");
+      return;
+    }
+
+    const newMaster = {
+      id: Date.now(),
+      ...formData,
+      status: "active",
+      rating: 5.0
+    };
+
+    const updatedMasters = [...mastersList, newMaster];
+    setMastersList(updatedMasters);
+    localStorage.setItem("usta_masters", JSON.stringify(updatedMasters));
+    
+    // Simulate Supabase global event (if we were using realtime)
+    window.dispatchEvent(new Event("storage"));
+
+    setFormData({ name: "", category: "", phone: "", telegram: "", address: "", price: "", login: "", password: "" });
+    setToastMessage("Usta muvaffaqiyatli qo'shildi!");
+    
+    setTimeout(() => {
+      setToastMessage("");
+      setActiveTab("masters");
+    }, 2000);
+  };
+
+  const handleDeleteMaster = (id: number) => {
+    if (confirm("Ushbu ustani o'chirishni xohlaysizmi?")) {
+      const updated = mastersList.filter(m => m.id !== id);
+      setMastersList(updated);
+      localStorage.setItem("usta_masters", JSON.stringify(updated));
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-background pt-24 pb-12">
+    <div className="min-h-screen bg-background pt-24 pb-12 relative">
+      {/* Toast */}
+      {toastMessage && (
+        <div className="fixed top-24 right-8 bg-green-500 text-white px-6 py-3 rounded-xl font-bold shadow-2xl flex items-center gap-2 animate-in fade-in slide-in-from-top-4 z-50">
+          <CheckCircle2 className="w-5 h-5" />
+          {toastMessage}
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto px-4 md:px-8">
         
         {/* Header */}
@@ -82,8 +151,8 @@ export default function SuperAdminPage() {
           {activeTab === 'masters' && (
             <div className="space-y-6">
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold text-white">Barcha ustalar</h2>
-                <div className="relative w-64">
+                <h2 className="text-xl font-bold text-white">Barcha ustalar ({mastersList.length})</h2>
+                <div className="relative w-64 hidden sm:block">
                   <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-500" />
                   <input type="text" placeholder="Qidirish..." className="w-full bg-[#181513] border border-stone-700/80 rounded-xl pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:border-amber-500" />
                 </div>
@@ -96,16 +165,18 @@ export default function SuperAdminPage() {
                       <th className="pb-3 font-medium">Ism-Familiya</th>
                       <th className="pb-3 font-medium">Kategoriya</th>
                       <th className="pb-3 font-medium">Telefon</th>
+                      <th className="pb-3 font-medium">Login</th>
                       <th className="pb-3 font-medium">Status</th>
                       <th className="pb-3 font-medium text-right">Harakatlar</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {MOCK_MASTERS.map(master => (
+                    {mastersList.map(master => (
                       <tr key={master.id} className="border-b border-stone-800/50">
                         <td className="py-4 text-white font-medium">{master.name}</td>
-                        <td className="py-4 text-stone-400">{master.category}</td>
+                        <td className="py-4 text-stone-400 capitalize">{master.category}</td>
                         <td className="py-4 text-stone-400">{master.phone}</td>
+                        <td className="py-4 text-stone-500 font-mono">{master.login}</td>
                         <td className="py-4">
                           <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20">
                             Faol
@@ -115,7 +186,7 @@ export default function SuperAdminPage() {
                           <button className="p-2 bg-[#231F1C] hover:bg-stone-800 rounded-lg text-stone-400 hover:text-white transition-colors">
                             <Edit2 className="w-4 h-4" />
                           </button>
-                          <button className="p-2 bg-red-950/20 hover:bg-red-900/40 rounded-lg text-red-500 transition-colors">
+                          <button onClick={() => handleDeleteMaster(master.id)} className="p-2 bg-red-950/20 hover:bg-red-900/40 rounded-lg text-red-500 transition-colors">
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </td>
@@ -123,24 +194,27 @@ export default function SuperAdminPage() {
                     ))}
                   </tbody>
                 </table>
+                {mastersList.length === 0 && (
+                  <div className="text-center py-8 text-stone-500">Ustalar yo'q. Yangi qo'shing.</div>
+                )}
               </div>
             </div>
           )}
 
           {/* TAB: Add New Master */}
           {activeTab === 'add' && (
-            <div className="max-w-2xl">
+            <form onSubmit={handleAddMaster} className="max-w-2xl">
               <h2 className="text-xl font-bold text-white mb-6">Yangi usta ro'yxatdan o'tkazish</h2>
               
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-stone-400 mb-1.5">To'liq ism-familiya</label>
-                    <input type="text" className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" placeholder="Masalan: Alisher Vahobov" />
+                    <label className="block text-sm font-medium text-stone-400 mb-1.5">To'liq ism-familiya *</label>
+                    <input required type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" placeholder="Masalan: Alisher Vahobov" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-stone-400 mb-1.5">Kategoriya</label>
-                    <select className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500 appearance-none">
+                    <label className="block text-sm font-medium text-stone-400 mb-1.5">Kategoriya *</label>
+                    <select required name="category" value={formData.category} onChange={handleInputChange} className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500 appearance-none">
                       <option value="">Tanlang...</option>
                       <option value="santexnik">Santexnik</option>
                       <option value="elektrik">Elektrik</option>
@@ -152,47 +226,47 @@ export default function SuperAdminPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-stone-400 mb-1.5">Telefon raqam</label>
-                    <input type="tel" className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" placeholder="+998" />
+                    <label className="block text-sm font-medium text-stone-400 mb-1.5">Telefon raqam *</label>
+                    <input required type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" placeholder="+998" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-stone-400 mb-1.5">Telegram Username</label>
-                    <input type="text" className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" placeholder="@username" />
+                    <input type="text" name="telegram" value={formData.telegram} onChange={handleInputChange} className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" placeholder="@username" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-stone-400 mb-1.5">Manzil / Tuman</label>
-                    <input type="text" className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" placeholder="Chilonzor tumani" />
+                    <input type="text" name="address" value={formData.address} onChange={handleInputChange} className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" placeholder="Chilonzor tumani" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-stone-400 mb-1.5">Boshlang'ich narx (so'm)</label>
-                    <input type="number" className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" placeholder="100 000" />
+                    <input type="number" name="price" value={formData.price} onChange={handleInputChange} className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" placeholder="100 000" />
                   </div>
                 </div>
 
                 <div className="mt-8 pt-6 border-t border-stone-800">
-                  <h3 className="text-lg font-bold text-white mb-4">Kirish ma'lumotlari (Usta uchun)</h3>
+                  <h3 className="text-lg font-bold text-white mb-4">Kirish ma'lumotlari (Usta uchun) *</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-stone-400 mb-1.5">Login</label>
-                      <input type="text" className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" placeholder="Login yarating" />
+                      <label className="block text-sm font-medium text-stone-400 mb-1.5">Login *</label>
+                      <input required type="text" name="login" value={formData.login} onChange={handleInputChange} className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" placeholder="Login yarating" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-stone-400 mb-1.5">Parol</label>
-                      <input type="text" className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" placeholder="Parol yarating" />
+                      <label className="block text-sm font-medium text-stone-400 mb-1.5">Parol *</label>
+                      <input required type="text" name="password" value={formData.password} onChange={handleInputChange} className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" placeholder="Parol yarating" />
                     </div>
                   </div>
                 </div>
 
-                <div className="pt-6">
-                  <button className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-lg shadow-orange-500/25">
+                <div className="pt-6 flex justify-end">
+                  <button type="submit" className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-lg shadow-orange-500/25">
                     Ustaniki ro'yxatdan o'tkazish
                   </button>
                 </div>
               </div>
-            </div>
+            </form>
           )}
 
           {/* TAB: Global Activity */}

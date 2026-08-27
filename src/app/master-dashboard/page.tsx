@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ClipboardList, User, Image as ImageIcon, CheckCircle2, Phone, MessageCircle, XCircle, Plus, UploadCloud } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +13,23 @@ const TABS = [
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("orders");
   const [hasInstagram, setHasInstagram] = useState(false);
+  const [currentMaster, setCurrentMaster] = useState<any>(null);
+
+  // Load from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem("usta_current_master");
+    if (stored) {
+      setCurrentMaster(JSON.parse(stored));
+    } else {
+      // Default fallback for preview
+      setCurrentMaster({
+        name: "Alisher Usta",
+        category: "Santexnik",
+        phone: "+998901234567",
+        telegram: "@alisher_usta"
+      });
+    }
+  }, []);
 
   // Mock Orders
   const [orders, setOrders] = useState([
@@ -25,7 +42,9 @@ export default function Dashboard() {
     <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-6 pt-24 min-h-screen">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Boshqaruv Paneli</h1>
+          <h1 className="text-2xl font-bold text-foreground">
+            Boshqaruv Paneli {currentMaster ? `- ${currentMaster.name}` : ""}
+          </h1>
           <p className="text-sm text-muted-foreground">UstaGo profilingizni va buyurtmalarni boshqaring.</p>
         </div>
         <div className="bg-amber-500/10 text-amber-500 border border-amber-500/20 px-4 py-2 rounded-xl font-medium text-sm flex items-center gap-2 w-fit">
@@ -128,27 +147,27 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-muted-foreground">Ism va Familiya</label>
-                <input type="text" readOnly defaultValue="Alisher Usta" className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl opacity-70 cursor-not-allowed focus:outline-none" />
+                <input type="text" readOnly defaultValue={currentMaster?.name || "Alisher Usta"} className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl opacity-70 cursor-not-allowed focus:outline-none" />
               </div>
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-muted-foreground">Mutaxassislik</label>
-                <input type="text" readOnly defaultValue="Santexnik" className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl opacity-70 cursor-not-allowed focus:outline-none" />
+                <input type="text" readOnly defaultValue={currentMaster?.category || "Santexnik"} className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl opacity-70 cursor-not-allowed focus:outline-none capitalize" />
               </div>
             </div>
 
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-muted-foreground">O'zingiz haqingizda</label>
-              <textarea rows={4} readOnly defaultValue="Assalomu alaykum! Men 8 yillik tajribaga ega santexnikman." className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl opacity-70 cursor-not-allowed focus:outline-none"></textarea>
+              <textarea rows={4} readOnly defaultValue="Assalomu alaykum! Men o'z ishimning ustasiman." className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl opacity-70 cursor-not-allowed focus:outline-none"></textarea>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-muted-foreground">Telefon raqam</label>
-                <input type="tel" readOnly defaultValue="+998901234567" className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl opacity-70 cursor-not-allowed focus:outline-none" />
+                <input type="tel" readOnly defaultValue={currentMaster?.phone || "+998901234567"} className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl opacity-70 cursor-not-allowed focus:outline-none" />
               </div>
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-muted-foreground">Telegram Username</label>
-                <input type="text" readOnly defaultValue="@alisher_usta" className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl opacity-70 cursor-not-allowed focus:outline-none" />
+                <input type="text" readOnly defaultValue={currentMaster?.telegram || "@alisher_usta"} className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl opacity-70 cursor-not-allowed focus:outline-none" />
               </div>
             </div>
 

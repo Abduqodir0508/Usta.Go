@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Search, Star, ShieldCheck, MapPin, Filter, X } from "lucide-react";
@@ -20,6 +20,41 @@ export default function SearchPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
+  const [mastersList, setMastersList] = useState(MOCK_MASTERS);
+  
+  useEffect(() => {
+    // Listen for storage events (from Super Admin)
+    const loadMasters = () => {
+      const stored = localStorage.getItem("usta_masters");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        // Map stored structure to match catalog structure if needed
+        const categoryMapping: Record<string, string> = {
+          "santexnik": "plumber",
+          "elektrik": "electrician",
+          "mebelchi": "furniture",
+          "remont": "renovation"
+        };
+        const formatted = parsed.map((m: any) => ({
+          id: m.id.toString(),
+          name: m.name,
+          categoryKey: categoryMapping[m.category] || m.category,
+          rating: m.rating || 5.0,
+          reviews: 0,
+          price: m.price ? parseInt(m.price) : 50000,
+          verified: true,
+          image: "https://i.pravatar.cc/150?u=" + m.id,
+          location: m.address || "Toshkent",
+          rawCategory: m.category
+        }));
+        setMastersList([...MOCK_MASTERS, ...formatted]);
+      }
+    };
+    
+    loadMasters();
+    window.addEventListener("storage", loadMasters);
+    return () => window.removeEventListener("storage", loadMasters);
+  }, []);
 
   const CATEGORIES = [
     { key: "all", label: t.categories.all },
@@ -31,9 +66,9 @@ export default function SearchPage() {
   ];
 
   // Filter masters
-  const filteredMasters = MOCK_MASTERS.filter((master) => {
+  const filteredMasters = mastersList.filter((master) => {
     // We get the translated string for the master's category
-    const masterCategoryLabel = t.categories[master.categoryKey as keyof typeof t.categories];
+    const masterCategoryLabel = t.categories[master.categoryKey as keyof typeof t.categories] || master.categoryKey;
     
     const matchesSearch = master.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           masterCategoryLabel.toLowerCase().includes(searchQuery.toLowerCase());
