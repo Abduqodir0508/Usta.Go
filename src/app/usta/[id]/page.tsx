@@ -1,35 +1,43 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Star, ShieldCheck, MapPin, CheckCircle2, Phone, MessageCircle, ChevronLeft } from "lucide-react";
+import { useParams } from "next/navigation";
 
-export default async function UstaProfile({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  
-  // Mock data for master profile
-  const master = {
-    id,
-    name: "Alisher Usta",
-    category: "Santexnik",
-    rating: 4.8,
-    reviews: 124,
-    experience: "8 yil",
-    price: "50,000",
-    verified: true,
-    image: "https://i.pravatar.cc/150?u=alisher",
-    location: "Toshkent, Yunusobod",
-    about: "Assalomu alaykum! Men 8 yillik tajribaga ega santexnikman. Har qanday murakkablikdagi santexnika ishlarini tez va sifatli bajaraman.",
-    portfolio: [
-      "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=400",
-      "https://images.unsplash.com/photo-1607472586893-edb57cb3b4e1?auto=format&fit=crop&q=80&w=400",
-      "https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&q=80&w=400",
-    ],
-    services: [
-      { name: "Kran almashtirish", price: "50,000" },
-      { name: "Unitaz o'rnatish", price: "150,000" },
-      { name: "Trubalarni tozalash", price: "100,000" },
-      { name: "Suv isitgich (Ariston) o'rnatish", price: "250,000" },
-    ]
-  };
+export default function UstaProfile() {
+  const params = useParams();
+  const id = params.id as string;
+  const [master, setMaster] = useState<any>(null);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("usta_masters");
+    if (stored) {
+      const allMasters = JSON.parse(stored);
+      const found = allMasters.find((m: any) => m.id.toString() === id);
+      if (found) {
+        setMaster({
+          ...found,
+          experience: "8 yil", // Mock fallback for missing fields
+          about: "Assalomu alaykum! Men o'z ishimning ustasiman. Har qanday murakkablikdagi ishlarni tez va sifatli bajaraman.",
+          image: found.image || `https://i.pravatar.cc/150?u=${found.id}`,
+          portfolio: found.portfolio || [],
+          services: [
+            { name: "Asosiy xizmat", price: found.price ? `${found.price}` : "Kelishuv asosida" },
+          ]
+        });
+      }
+    }
+  }, [id]);
+
+  if (!master) {
+    return (
+      <div className="min-h-screen flex items-center justify-center pt-20">
+        <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto min-h-screen pb-24 md:pb-8 pt-20">
@@ -104,7 +112,7 @@ export default async function UstaProfile({ params }: { params: Promise<{ id: st
         <div className="mt-10">
           <h2 className="text-xl font-bold text-foreground mb-4 border-b border-border-color pb-2">Bajargan ishlari</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 md:gap-4">
-            {master.portfolio.map((img, i) => (
+            {master.portfolio.map((img: string, i: number) => (
               <div key={i} className="relative aspect-square rounded-2xl overflow-hidden bg-surface border border-border-color">
                 <Image src={img} alt="Portfolio" fill className="object-cover hover:scale-105 transition-transform duration-300" />
               </div>
@@ -116,7 +124,7 @@ export default async function UstaProfile({ params }: { params: Promise<{ id: st
         <div className="mt-10">
           <h2 className="text-xl font-bold text-foreground mb-4 border-b border-border-color pb-2">Xizmat narxlari</h2>
           <div className="bg-surface border border-border-color rounded-2xl overflow-hidden">
-            {master.services.map((service, i) => (
+            {master.services.map((service: any, i: number) => (
               <div 
                 key={i} 
                 className="flex items-center justify-between p-4 border-b border-border-color last:border-0 hover:bg-surface-hover transition-colors"

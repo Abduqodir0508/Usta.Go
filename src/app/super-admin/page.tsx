@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Users, UserPlus, Activity, Search, Shield, Trash2, Edit2, LogOut, CheckCircle2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabase";
 
 const INITIAL_MASTERS = [
   { id: 1, name: "Aziz Rakhimov", category: "Santexnik", phone: "+998 90 123 45 67", status: "active", telegram: "@aziz_usta", address: "Yunusobod", price: "150000", login: "aziz123", password: "123" },
@@ -37,6 +38,9 @@ export default function SuperAdminPage() {
     }
   }, []);
 
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
   const handleLogout = () => {
     router.push("/");
   };
@@ -46,16 +50,51 @@ export default function SuperAdminPage() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleAddMaster = (e: React.FormEvent) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setAvatarFile(e.target.files[0]);
+    }
+  };
+
+  const handleAddMaster = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.category || !formData.phone || !formData.login || !formData.password) {
       alert("Iltimos, barcha majburiy maydonlarni to'ldiring!");
       return;
     }
 
+    setIsUploading(true);
+    let avatarUrl = "";
+
+    try {
+      if (avatarFile) {
+        const fileExt = avatarFile.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random()}.${fileExt}`;
+        const filePath = `avatars/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('ustago-media')
+          .upload(filePath, avatarFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('ustago-media')
+          .getPublicUrl(filePath);
+
+        avatarUrl = publicUrl;
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Rasm yuklashda xatolik yuz berdi!');
+      setIsUploading(false);
+      return;
+    }
+
     const newMaster = {
       id: Date.now(),
       ...formData,
+      image: avatarUrl || undefined,
       status: "active",
       rating: 5.0
     };
@@ -68,7 +107,9 @@ export default function SuperAdminPage() {
     window.dispatchEvent(new Event("storage"));
 
     setFormData({ name: "", category: "", phone: "", telegram: "", address: "", price: "", login: "", password: "" });
+    setAvatarFile(null);
     setToastMessage("Usta muvaffaqiyatli qo'shildi!");
+    setIsUploading(false);
     
     setTimeout(() => {
       setToastMessage("");
@@ -207,6 +248,10 @@ export default function SuperAdminPage() {
               <h2 className="text-xl font-bold text-white mb-6">Yangi usta ro'yxatdan o'tkazish</h2>
               
               <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-stone-400 mb-1.5">Usta Rasmi (Avatar)</label>
+                  <input type="file" accept="image/*" onChange={handleFileChange} className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-2 text-white focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-500 file:text-white hover:file:bg-amber-600 transition-all cursor-pointer" />
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-stone-400 mb-1.5">To'liq ism-familiya *</label>
@@ -261,8 +306,8 @@ export default function SuperAdminPage() {
                 </div>
 
                 <div className="pt-6 flex justify-end">
-                  <button type="submit" className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-lg shadow-orange-500/25">
-                    Ustaniki ro'yxatdan o'tkazish
+                  <button disabled={isUploading} type="submit" className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-lg shadow-orange-500/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                    {isUploading ? "Yuklanmoqda..." : "Ustaniki ro'yxatdan o'tkazish"}
                   </button>
                 </div>
               </div>

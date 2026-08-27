@@ -18,6 +18,8 @@ export function TopNavbar() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isAiOpen, setIsAiOpen] = useState(false);
 
+  const [session, setSession] = useState<{ type: 'client' | 'master' | 'admin', name: string, id?: string } | null>(null);
+
   useEffect(() => {
     setMounted(true);
     
@@ -25,9 +27,52 @@ export function TopNavbar() {
       setIsScrolled(window.scrollY > 10);
     };
     
+    const checkSession = () => {
+      // Check admin
+      const isSuperAdmin = window.location.pathname === "/super-admin";
+      if (isSuperAdmin) {
+        setSession({ type: 'admin', name: "Super Admin" });
+        return;
+      }
+      
+      const master = localStorage.getItem("usta_current_master");
+      if (master) {
+        const m = JSON.parse(master);
+        setSession({ type: 'master', name: m.name, id: m.id });
+        return;
+      }
+      
+      const client = localStorage.getItem("usta_client");
+      if (client) {
+        const c = JSON.parse(client);
+        setSession({ type: 'client', name: c.name });
+        return;
+      }
+      
+      setSession(null);
+    };
+
+    checkSession();
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("storage", checkSession);
+    
+    // Custom event for same-tab auth changes
+    window.addEventListener("auth_changed", checkSession);
+    
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("storage", checkSession);
+      window.removeEventListener("auth_changed", checkSession);
+    };
   }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("usta_current_master");
+    localStorage.removeItem("usta_client");
+    setSession(null);
+    window.dispatchEvent(new Event("auth_changed"));
+    window.location.href = "/";
+  };
 
   return (
     <>
@@ -55,7 +100,7 @@ export function TopNavbar() {
             <Link href="/katalog" className="text-sm font-medium text-foreground opacity-70 hover:opacity-100 transition-opacity">
               {t.navbar.directory}
             </Link>
-            <Link href="#faq" className="text-sm font-medium text-foreground opacity-70 hover:opacity-100 transition-opacity">
+            <Link href="/#faq" className="text-sm font-medium text-foreground opacity-70 hover:opacity-100 transition-opacity">
               {t.navbar.faq}
             </Link>
           </nav>
@@ -84,19 +129,58 @@ export function TopNavbar() {
             <div className="h-5 w-px bg-border-color mx-1 hidden sm:block"></div>
 
             {/* Auth/CTAs */}
-            <button 
-              onClick={() => setIsAuthOpen(true)}
-              className="hidden sm:block text-sm font-semibold text-foreground opacity-80 hover:opacity-100 transition-opacity"
-            >
-              {t.navbar.login}
-            </button>
-            
-            <button 
-              onClick={() => setIsAuthOpen(true)}
-              className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white px-5 py-2.5 rounded-full text-sm font-semibold shadow-lg shadow-orange-500/20 transition-all hover:scale-105 active:scale-95"
-            >
-              {t.navbar.joinAsMaster}
-            </button>
+            {mounted && session ? (
+              <div className="flex items-center gap-3">
+                <div className="hidden sm:flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-stone-700 to-stone-800 flex items-center justify-center border border-border-color text-white font-bold text-sm">
+                    {session.name.charAt(0)}
+                  </div>
+                  <span className="text-sm font-medium text-foreground hidden md:block max-w-[100px] truncate">
+                    {session.name}
+                  </span>
+                </div>
+                
+                {session.type === 'master' && (
+                  <Link 
+                    href="/master-dashboard"
+                    className="text-sm font-semibold text-amber-500 hover:text-amber-400 transition-colors"
+                  >
+                    Kabinet
+                  </Link>
+                )}
+                {session.type === 'admin' && (
+                  <Link 
+                    href="/super-admin"
+                    className="text-sm font-semibold text-amber-500 hover:text-amber-400 transition-colors"
+                  >
+                    Admin Panel
+                  </Link>
+                )}
+                
+                <button 
+                  onClick={handleLogout}
+                  className="p-2 text-stone-400 hover:text-red-500 transition-colors"
+                  title="Chiqish"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                </button>
+              </div>
+            ) : (
+              <>
+                <button 
+                  onClick={() => setIsAuthOpen(true)}
+                  className="hidden sm:block text-sm font-semibold text-foreground opacity-80 hover:opacity-100 transition-opacity"
+                >
+                  {t.navbar.login}
+                </button>
+                <button 
+                  onClick={() => setIsAuthOpen(true)}
+                  className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white px-5 py-2.5 rounded-full text-sm font-semibold shadow-lg shadow-orange-500/20 transition-all hover:scale-105 active:scale-95"
+                >
+                  {t.navbar.joinAsMaster}
+                </button>
+              </>
+            )}
             
           </div>
         </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { ClipboardList, User, Image as ImageIcon, CheckCircle2, Phone, MessageCircle, XCircle, Plus, UploadCloud } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabase";
 
 const TABS = [
   { id: "orders", label: "Buyurtmalar", icon: ClipboardList },
@@ -14,22 +15,90 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("orders");
   const [hasInstagram, setHasInstagram] = useState(false);
   const [currentMaster, setCurrentMaster] = useState<any>(null);
+  
+  const [portfolioImages, setPortfolioImages] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Load from localStorage
   useEffect(() => {
     const stored = localStorage.getItem("usta_current_master");
     if (stored) {
-      setCurrentMaster(JSON.parse(stored));
+      const master = JSON.parse(stored);
+      setCurrentMaster(master);
+      setPortfolioImages(master.portfolio || []);
     } else {
       // Default fallback for preview
       setCurrentMaster({
         name: "Alisher Usta",
         category: "Santexnik",
         phone: "+998901234567",
-        telegram: "@alisher_usta"
+        telegram: "@alisher_usta",
+        portfolio: []
       });
     }
   }, []);
+
+  const handleUploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0] || !currentMaster) return;
+    
+    const file = e.target.files[0];
+    setIsUploading(true);
+    
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random()}.${fileExt}`;
+      const filePath = `portfolio/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('ustago-media')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('ustago-media')
+        .getPublicUrl(filePath);
+
+      const updatedPortfolio = [...portfolioImages, publicUrl];
+      setPortfolioImages(updatedPortfolio);
+      
+      const updatedMaster = { ...currentMaster, portfolio: updatedPortfolio };
+      setCurrentMaster(updatedMaster);
+      localStorage.setItem("usta_current_master", JSON.stringify(updatedMaster));
+      
+      // Update global masters array
+      const allMasters = JSON.parse(localStorage.getItem("usta_masters") || "[]");
+      const updatedAll = allMasters.map((m: any) => m.id === currentMaster.id ? updatedMaster : m);
+      localStorage.setItem("usta_masters", JSON.stringify(updatedAll));
+      
+      window.dispatchEvent(new Event("storage"));
+      
+    } catch (error) {
+      console.error('Error uploading portfolio image:', error);
+      alert('Rasm yuklashda xatolik yuz berdi!');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDeleteImage = (urlToRemove: string) => {
+    if (!confirm("Ushbu rasmni o'chirishni xohlaysizmi?")) return;
+    
+    const updatedPortfolio = portfolioImages.filter(url => url !== urlToRemove);
+    setPortfolioImages(updatedPortfolio);
+    
+    if (currentMaster) {
+      const updatedMaster = { ...currentMaster, portfolio: updatedPortfolio };
+      setCurrentMaster(updatedMaster);
+      localStorage.setItem("usta_current_master", JSON.stringify(updatedMaster));
+      
+      const allMasters = JSON.parse(localStorage.getItem("usta_masters") || "[]");
+      const updatedAll = allMasters.map((m: any) => m.id === currentMaster.id ? updatedMaster : m);
+      localStorage.setItem("usta_masters", JSON.stringify(updatedAll));
+      
+      window.dispatchEvent(new Event("storage"));
+    }
+  };
 
   // Mock Orders
   const [orders, setOrders] = useState([
@@ -202,16 +271,35 @@ export default function Dashboard() {
             </div>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <button className="aspect-square rounded-2xl border-2 border-dashed border-border-color bg-background flex flex-col items-center justify-center text-muted-foreground hover:text-amber-500 hover:border-amber-500 transition-colors group">
-                <UploadCloud className="w-8 h-8 mb-2 group-hover:scale-110 transition-transform" />
-                <span className="text-sm font-medium">Rasm yuklash</span>
-              </button>
+              <div className="aspect-square rounded-2xl border-2 border-dashed border-border-color bg-background flex flex-col items-center justify-center text-muted-foreground hover:text-amber-500 hover:border-amber-500 transition-colors group relative cursor-pointer">
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleUploadImage} 
+                  disabled={isUploading}
+                  className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed" 
+                />
+                {isUploading ? (
+                  <div className="flex flex-col items-center">
+                    <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-2"></div>
+                    <span className="text-sm font-medium">Yuklanmoqda...</span>
+                  </div>
+                ) : (
+                  <>
+                    <UploadCloud className="w-8 h-8 mb-2 group-hover:scale-110 transition-transform" />
+                    <span className="text-sm font-medium">Rasm yuklash</span>
+                  </>
+                )}
+              </div>
               
-              {[1, 2, 3].map((i) => (
+              {portfolioImages.map((url, i) => (
                 <div key={i} className="aspect-square rounded-2xl bg-background relative group overflow-hidden border border-border-color">
-                  <img src={`https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=400`} alt="portfolio" className="w-full h-full object-cover" />
+                  <img src={url} alt={`Portfolio ${i+1}`} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <button className="bg-surface/90 text-red-500 p-2 rounded-full hover:bg-surface hover:text-red-600 transition-colors shadow-lg">
+                    <button 
+                      onClick={() => handleDeleteImage(url)}
+                      className="bg-surface/90 text-red-500 p-2 rounded-full hover:bg-surface hover:text-red-600 transition-colors shadow-lg"
+                    >
                       <XCircle className="w-6 h-6" />
                     </button>
                   </div>

@@ -35,6 +35,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     // Normal client login
     if (clientName && clientPhone) {
       localStorage.setItem("usta_client", JSON.stringify({ name: clientName, phone: clientPhone }));
+      window.dispatchEvent(new Event("auth_changed"));
     }
     onClose();
   };
@@ -46,6 +47,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
       
       if (validMaster) {
         localStorage.setItem("usta_current_master", JSON.stringify(validMaster));
+        window.dispatchEvent(new Event("auth_changed"));
         onClose();
         router.push("/master-dashboard");
       } else {
