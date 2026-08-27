@@ -107,34 +107,37 @@ export default function Dashboard() {
           <div className="space-y-6 max-w-2xl">
             <h2 className="text-lg font-bold text-foreground">Shaxsiy ma'lumotlar</h2>
             
+            <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 flex items-start gap-3">
+              <div className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-2 flex-shrink-0" />
+              <p className="text-sm text-amber-500/90 leading-relaxed">
+                Ma'lumotlarni o'zgartirish uchun qo'llab-quvvatlash xizmatiga murojaat qiling.
+              </p>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-muted-foreground">Ism va Familiya</label>
-                <input type="text" defaultValue="Alisher Usta" className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500" />
+                <input type="text" readOnly defaultValue="Alisher Usta" className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl opacity-70 cursor-not-allowed focus:outline-none" />
               </div>
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-muted-foreground">Mutaxassislik</label>
-                <select className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500">
-                  <option>Santexnik</option>
-                  <option>Elektrik</option>
-                  <option>Mebelchi</option>
-                </select>
+                <input type="text" readOnly defaultValue="Santexnik" className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl opacity-70 cursor-not-allowed focus:outline-none" />
               </div>
             </div>
 
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-muted-foreground">O'zingiz haqingizda</label>
-              <textarea rows={4} defaultValue="Assalomu alaykum! Men 8 yillik tajribaga ega santexnikman." className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
+              <textarea rows={4} readOnly defaultValue="Assalomu alaykum! Men 8 yillik tajribaga ega santexnikman." className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl opacity-70 cursor-not-allowed focus:outline-none"></textarea>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-muted-foreground">Telefon raqam</label>
-                <input type="tel" defaultValue="+998901234567" className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500" />
+                <input type="tel" readOnly defaultValue="+998901234567" className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl opacity-70 cursor-not-allowed focus:outline-none" />
               </div>
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-muted-foreground">Telegram Username</label>
-                <input type="text" defaultValue="@alisher_usta" className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500" />
+                <input type="text" readOnly defaultValue="@alisher_usta" className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl opacity-70 cursor-not-allowed focus:outline-none" />
               </div>
             </div>
 
@@ -157,12 +160,6 @@ export default function Dashboard() {
                   <input type="url" placeholder="https://instagram.com/..." className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500" />
                 </div>
               )}
-            </div>
-
-            <div className="pt-4 flex justify-end">
-              <button className="bg-amber-500 hover:bg-amber-600 text-white px-6 py-2.5 rounded-xl font-bold transition-colors">
-                Saqlash
-              </button>
             </div>
           </div>
         )}
