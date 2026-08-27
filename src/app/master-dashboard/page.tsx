@@ -107,11 +107,22 @@ export default function Dashboard() {
           <div className="space-y-6 max-w-2xl">
             <h2 className="text-lg font-bold text-foreground">Shaxsiy ma'lumotlar</h2>
             
-            <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 flex items-start gap-3">
-              <div className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-2 flex-shrink-0" />
-              <p className="text-sm text-amber-500/90 leading-relaxed">
-                Ma'lumotlarni o'zgartirish uchun qo'llab-quvvatlash xizmatiga murojaat qiling.
-              </p>
+            <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-2 flex-shrink-0" />
+                <p className="text-sm text-amber-500/90 leading-relaxed">
+                  Ism yoki kategoriyani o'zgartirish uchun admin bilan bog'laning.
+                </p>
+              </div>
+              <a 
+                href="https://t.me/A_Husanboyev" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 text-xs font-bold py-2 px-4 rounded-lg transition-colors whitespace-nowrap flex items-center gap-2"
+              >
+                <MessageCircle className="w-4 h-4" />
+                Admin bilan bog'lanish
+              </a>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

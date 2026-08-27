@@ -10,7 +10,7 @@ export function Footer() {
         </p>
         
         <a 
-          href="https://t.me/admin" 
+          href="https://t.me/A_Husanboyev" 
           target="_blank" 
           rel="noopener noreferrer"
           className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-white transition-colors cursor-pointer group"

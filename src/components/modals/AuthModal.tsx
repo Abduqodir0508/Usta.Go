@@ -92,7 +92,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   </p>
                   
                   <a 
-                    href="https://t.me/admin" 
+                    href="https://t.me/A_Husanboyev" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2"
