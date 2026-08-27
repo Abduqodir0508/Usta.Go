@@ -85,7 +85,12 @@ export const dictionary = {
       before1: "Часами искать мастеров через знакомых и не находить номер.",
       before2: "Не знать цену и опыт мастера заранее, переплачивать.",
       before3: "Путаница при объяснении проблемы по телефону и опоздания.",
-      before4: "Нет гарантии на выполненную работу и невозможность найти мастера снова."
+      before4: "Нет гарантии на выполненную работу и невозможность найти мастера снова.",
+      afterTitle: "С USTAGO / БЫСТРО И ПРОСТО",
+      after1: "Выбор мастера за 10 секунд по вашей проблеме через AI помощника.",
+      after2: "Прозрачные цены, реальные отзывы клиентов и портфолио работ.",
+      after3: "Отправка заказа с фото и локацией в один клик через Telegram.",
+      after4: "Личное мини-приложение для каждого мастера и постоянная связь."
     },
     aiShowcase: {
       title: "Личный помощник по дому для каждого",
@@ -134,7 +139,12 @@ export const dictionary = {
       before1: "Spending hours looking for craftsmen through acquaintances.",
       before2: "Not knowing the price and experience in advance, overpaying.",
       before3: "Confusion when explaining the problem over the phone and delays.",
-      before4: "No guarantee for the work done and inability to find the master again."
+      before4: "No guarantee for the work done and inability to find the master again.",
+      afterTitle: "WITH USTAGO / FAST & EASY",
+      after1: "Select a master in 10 seconds based on your problem via AI assistant.",
+      after2: "Transparent prices, real customer reviews, and portfolio pictures.",
+      after3: "Send an order with photos and location in one click via Telegram.",
+      after4: "Personal mini-app for each master and permanent contact."
     },
     aiShowcase: {
       title: "Personal home assistant for everyone",
