@@ -20,10 +20,9 @@ export const metadata: Metadata = {
   description: "O'zbekiston bo'ylab eng yaxshi va ishonchli ustalar platformasi",
   icons: {
     icon: [
-      { url: '/icon.png', type: 'image/png' },
-      { url: '/favicon.ico' }
+      { url: '/logo.png', type: 'image/png' },
     ],
-    apple: '/icon.png',
+    apple: '/logo.png',
   },
 };
 
