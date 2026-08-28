@@ -10,6 +10,10 @@ export const dictionary = {
       login: "Kirish",
       joinAsMaster: "Usta sifatida qo'shilish"
     },
+    footer: {
+      copyright: "© 2026 UstaGo. Barcha huquqlar himoyalangan.",
+      support: "Qo'llab-quvvatlash"
+    },
     hero: {
       badge: "🛠 O'zbekistondagi #1 Usta topish platformasi",
       title: "Uyingizdagi har qanday muammoga professional usta — AI yordamida bir daqiqada.",
@@ -89,7 +93,14 @@ export const dictionary = {
       statusNew: "YANGI",
       statusInProgress: "JARAYONDA",
       statusCompleted: "YAKUNLANGAN",
-      logout: "Chiqish"
+      logout: "Chiqish",
+      profilePreview: "Profil ko'rinishi (Mijozlar uchun)",
+      editNoticeTitle: "Ma'lumotlarni o'zgartirish",
+      editNoticeDesc: "Ma'lumotlarni o'zgartirish uchun adminga murojaat qiling",
+      editNoticeBtn: "Adminga yozish",
+      proTeaserTitle: "Profil dizaynini sozlash",
+      proTeaserDesc: "PRO tarifida profil ranglari va foni dizaynini o'zgartirish imkoniyati mavjud. O'z profilingizni ajratib ko'rsating!",
+      proTeaserBtn: "Tarifni yangilash →"
     }
   },
   RU: {
@@ -100,6 +111,10 @@ export const dictionary = {
       faq: "FAQ",
       login: "Войти",
       joinAsMaster: "Стать мастером"
+    },
+    footer: {
+      copyright: "© 2026 UstaGo. Все права защищены.",
+      support: "Техническая поддержка"
     },
     hero: {
       badge: "🛠 Платформа #1 для поиска мастеров в Узбекистане",
@@ -180,7 +195,14 @@ export const dictionary = {
       statusNew: "НОВЫЙ",
       statusInProgress: "В ПРОЦЕССЕ",
       statusCompleted: "ЗАВЕРШЕН",
-      logout: "Выйти"
+      logout: "Выйти",
+      profilePreview: "Предпросмотр профиля (Для клиентов)",
+      editNoticeTitle: "Редактирование данных",
+      editNoticeDesc: "Для изменения информации обратитесь к администратору",
+      editNoticeBtn: "Связаться с админом",
+      proTeaserTitle: "Настройка дизайна профиля",
+      proTeaserDesc: "На тарифе PRO доступно изменение цвета и фона профиля. Сделайте ваш профиль уникальным!",
+      proTeaserBtn: "Обновить тариф →"
     }
   },
   EN: {
@@ -191,6 +213,10 @@ export const dictionary = {
       faq: "FAQ",
       login: "Sign in",
       joinAsMaster: "Join as Master"
+    },
+    footer: {
+      copyright: "© 2026 UstaGo. All rights reserved.",
+      support: "Customer Support"
     },
     hero: {
       badge: "🛠 #1 Craftsmen Platform in Uzbekistan",
@@ -271,7 +297,14 @@ export const dictionary = {
       statusNew: "NEW",
       statusInProgress: "IN PROGRESS",
       statusCompleted: "COMPLETED",
-      logout: "Logout"
+      logout: "Logout",
+      profilePreview: "Profile Preview (For Clients)",
+      editNoticeTitle: "Edit Information",
+      editNoticeDesc: "To change profile details, contact the administrator",
+      editNoticeBtn: "Contact Admin",
+      proTeaserTitle: "Customize Profile Design",
+      proTeaserDesc: "Change background themes and colors with PRO plan. Stand out from the crowd!",
+      proTeaserBtn: "Upgrade Plan →"
     }
   }
 };

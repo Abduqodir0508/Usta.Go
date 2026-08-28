@@ -77,6 +77,42 @@ export default function Dashboard() {
     }
   };
 
+  const handleUploadAvatar = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0] || !currentMaster) return;
+    
+    const file = e.target.files[0];
+    
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `avatar-${Date.now()}-${Math.random()}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('ustago-media')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('ustago-media')
+        .getPublicUrl(filePath);
+
+      const updatedMaster = { ...currentMaster, avatar_url: publicUrl };
+      setCurrentMaster(updatedMaster);
+      localStorage.setItem("usta_current_master", JSON.stringify(updatedMaster));
+      
+      const allMasters = JSON.parse(localStorage.getItem("usta_masters") || "[]");
+      const updatedAll = allMasters.map((m: any) => m.id === currentMaster.id ? updatedMaster : m);
+      localStorage.setItem("usta_masters", JSON.stringify(updatedAll));
+      
+      window.dispatchEvent(new Event("storage"));
+      
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      alert('Avatar yuklashda xatolik yuz berdi!');
+    }
+  };
+
   const handleDeleteImage = (urlToRemove: string) => {
     if (!confirm("Ushbu rasmni o'chirishni xohlaysizmi?")) return;
     
@@ -195,13 +231,29 @@ export default function Dashboard() {
           <div className="space-y-8 max-w-2xl">
             {/* Live Preview Card */}
             <div>
-              <h2 className="text-lg font-bold text-foreground mb-4">Profil ko'rinishi (Mijozlar uchun)</h2>
+              <h2 className="text-lg font-bold text-foreground mb-4">{t.dashboard?.profilePreview || "Profil ko'rinishi (Mijozlar uchun)"}</h2>
               <div className="bg-background border border-border-color rounded-2xl overflow-hidden max-w-sm shadow-sm relative">
                 <div className="h-20 bg-gradient-to-r from-stone-800 to-stone-900"></div>
                 <div className="px-5 pb-5">
                   <div className="flex justify-between items-start -mt-10 mb-3">
-                    <div className="w-20 h-20 rounded-full border-4 border-background bg-surface flex items-center justify-center overflow-hidden">
-                      <User className="w-10 h-10 text-muted-foreground" />
+                    <div className="relative group">
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={handleUploadAvatar} 
+                        className="absolute inset-0 opacity-0 cursor-pointer z-10 w-20 h-20 rounded-full" 
+                        title="Rasmni o'zgartirish"
+                      />
+                      <div className="w-20 h-20 rounded-full border-4 border-background bg-surface flex items-center justify-center overflow-hidden relative">
+                        {currentMaster?.avatar_url ? (
+                          <img src={currentMaster.avatar_url} alt={currentMaster?.name} className="w-full h-full object-cover group-hover:opacity-70 transition-opacity" />
+                        ) : (
+                          <User className="w-10 h-10 text-muted-foreground group-hover:scale-110 transition-transform" />
+                        )}
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                          <UploadCloud className="w-6 h-6 text-white" />
+                        </div>
+                      </div>
                     </div>
                     <div className="bg-surface px-2.5 py-1 rounded-full border border-border-color flex items-center gap-1.5 shadow-sm mt-10">
                       <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
@@ -213,7 +265,7 @@ export default function Dashboard() {
                     <p className="text-amber-500 font-medium text-sm">{currentMaster?.category || "Mutaxassislik"}</p>
                   </div>
                   <p className="text-sm text-muted-foreground mt-3 line-clamp-2">
-                    Assalomu alaykum! Men o'z ishimning ustasiman. Sifatli va tezkor xizmat ko'rsataman.
+                    {currentMaster?.bio || "Assalomu alaykum! Men o'z ishimning ustasiman. Sifatli va tezkor xizmat ko'rsataman."}
                   </p>
                   <div className="flex items-center gap-2 mt-4 text-xs font-medium text-muted-foreground">
                     <MapPin className="w-3.5 h-3.5" /> Chilonzor tumani
@@ -229,9 +281,9 @@ export default function Dashboard() {
                   <Lock className="w-5 h-5 text-blue-500" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-foreground text-sm">Ma'lumotlarni o'zgartirish</h4>
+                  <h4 className="font-semibold text-foreground text-sm">{t.dashboard?.editNoticeTitle || "Ma'lumotlarni o'zgartirish"}</h4>
                   <p className="text-sm text-muted-foreground mt-0.5">
-                    Ma'lumotlarni o'zgartirish uchun adminga murojaat qiling
+                    {t.dashboard?.editNoticeDesc || "Ma'lumotlarni o'zgartirish uchun adminga murojaat qiling"}
                   </p>
                 </div>
               </div>
@@ -241,7 +293,7 @@ export default function Dashboard() {
                 rel="noopener noreferrer"
                 className="bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold py-2 px-4 rounded-lg transition-colors whitespace-nowrap"
               >
-                Adminga yozish
+                {t.dashboard?.editNoticeBtn || "Adminga yozish"}
               </a>
             </div>
 
@@ -257,12 +309,12 @@ export default function Dashboard() {
                   <ImageIcon className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-foreground">Profil dizaynini sozlash</h4>
+                  <h4 className="font-bold text-foreground">{t.dashboard?.proTeaserTitle || "Profil dizaynini sozlash"}</h4>
                   <p className="text-sm text-muted-foreground mt-1 max-w-[90%]">
-                    PRO tarifida profil ranglari va foni dizaynini o'zgartirish imkoniyati mavjud. O'z profilingizni ajratib ko'rsating!
+                    {t.dashboard?.proTeaserDesc || "PRO tarifida profil ranglari va foni dizaynini o'zgartirish imkoniyati mavjud. O'z profilingizni ajratib ko'rsating!"}
                   </p>
                   <button className="mt-3 text-sm font-semibold text-amber-500 group-hover:text-amber-600 transition-colors flex items-center gap-1">
-                    Tarifni yangilash <span className="text-lg leading-none">&rarr;</span>
+                    {t.dashboard?.proTeaserBtn || "Tarifni yangilash →"}
                   </button>
                 </div>
               </div>
