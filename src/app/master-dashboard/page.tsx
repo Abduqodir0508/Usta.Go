@@ -33,9 +33,20 @@ export default function Dashboard() {
         if (localMaster.id) {
           const { data, error } = await supabase.from('ustalar').select('*').eq('id', localMaster.id).single();
           if (data && !error) {
-            setCurrentMaster(data);
-            setPortfolioImages(data.portfolio || []);
-            localStorage.setItem("usta_current_master", JSON.stringify(data));
+            let updatedData = { ...data };
+            if (data.is_pro && data.pro_expires_at && !data.pro_expires_at.startsWith('2099')) {
+               const diff = new Date(data.pro_expires_at).getTime() - new Date().getTime();
+               const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+               if (days <= 0) {
+                 await supabase.from('ustalar').update({ is_pro: false, pro_plan: null, pro_expires_at: null }).eq('id', data.id);
+                 updatedData.is_pro = false;
+                 updatedData.pro_plan = null;
+                 updatedData.pro_expires_at = null;
+               }
+            }
+            setCurrentMaster(updatedData);
+            setPortfolioImages(updatedData.portfolio || []);
+            localStorage.setItem("usta_current_master", JSON.stringify(updatedData));
           } else {
             setCurrentMaster(localMaster);
             setPortfolioImages(localMaster.portfolio || []);
@@ -175,7 +186,7 @@ export default function Dashboard() {
   };
 
   const handleCancelPro = async () => {
-    if (confirm("Rostdan ham PRO obunani bekor qilmoqchimisiz? To'langan mablag' qaytarib berilmaydi!")) {
+    if (confirm(t.proWidget?.cancelConfirm || "Rostdan ham PRO obunani bekor qilmoqchimisiz? To'langan mablag' qaytarib berilmaydi!")) {
       
       if (currentMaster?.id) {
         await supabase.from('ustalar').update({ 
@@ -189,7 +200,7 @@ export default function Dashboard() {
       setCurrentMaster(updatedMaster);
       localStorage.setItem("usta_current_master", JSON.stringify(updatedMaster));
       window.dispatchEvent(new Event("storage"));
-      alert("PRO obunangiz bekor qilindi.");
+      alert(t.proWidget?.cancelSuccess || "PRO obunangiz bekor qilindi.");
     }
   };
 
@@ -372,59 +383,120 @@ export default function Dashboard() {
             </div>
 
             {/* PRO Customization Teaser / Status */}
-            {currentMaster?.is_pro ? (
-              <div className="bg-gradient-to-br from-green-500/10 to-emerald-600/10 border border-green-500/20 rounded-xl p-5 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-3">
-                  <span className="bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider shadow-sm">
-                    FAOL
-                  </span>
-                </div>
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                  <div className="flex gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-green-500/20">
-                      <CheckCircle2 className="w-6 h-6 text-white" />
+            {(() => {
+              if (currentMaster?.is_pro) {
+                let remainingDays = 0;
+                let isLifetime = false;
+                if (currentMaster.pro_expires_at) {
+                  if (currentMaster.pro_expires_at.startsWith('2099')) {
+                    isLifetime = true;
+                  } else {
+                    const diff = new Date(currentMaster.pro_expires_at).getTime() - new Date().getTime();
+                    remainingDays = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                  }
+                }
+
+                let statusColor = "green";
+                if (!isLifetime) {
+                  if (remainingDays <= 5 && remainingDays > 1) statusColor = "yellow";
+                  if (remainingDays === 1) statusColor = "red";
+                }
+
+                const gradientMap: any = {
+                  green: "from-green-500/10 to-emerald-600/10 border-green-500/20",
+                  yellow: "from-yellow-500/10 to-amber-600/10 border-yellow-500/20",
+                  red: "from-red-500/10 to-rose-600/10 border-red-500/20",
+                };
+                const iconBgMap: any = {
+                  green: "from-green-500 to-emerald-600 shadow-green-500/20",
+                  yellow: "from-yellow-500 to-amber-600 shadow-yellow-500/20",
+                  red: "from-red-500 to-rose-600 shadow-red-500/20",
+                };
+                const badgeColorMap: any = {
+                  green: "bg-green-500",
+                  yellow: "bg-yellow-500",
+                  red: "bg-red-500",
+                };
+
+                return (
+                  <div className={`bg-gradient-to-br ${gradientMap[statusColor]} border rounded-xl p-5 relative overflow-hidden group`}>
+                    <div className="absolute top-0 right-0 p-3">
+                      <span className={`${badgeColorMap[statusColor]} text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider shadow-sm`}>
+                        FAOL
+                      </span>
                     </div>
-                    <div>
-                      <h4 className="font-bold text-foreground">PRO obunangiz faol</h4>
-                      <p className="text-sm text-muted-foreground mt-1 max-w-[90%]">
-                        Joriy tarif: {currentMaster.pro_plan}. Siz barcha imtiyozlardan foydalanishingiz mumkin.
-                      </p>
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                      <div className="flex gap-4">
+                        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${iconBgMap[statusColor]} flex items-center justify-center flex-shrink-0 shadow-lg`}>
+                          <CheckCircle2 className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                          {isLifetime ? (
+                            <h4 className="font-bold text-foreground">{t.proWidget?.lifetime || "⭐ Umrbod PRO (Cheksiz muddat)"}</h4>
+                          ) : (
+                            <h4 className="font-bold text-foreground">
+                              {statusColor === "red" 
+                                ? (t.proWidget?.lastDay || "🚨 Bugun PRO obunangizning oxirgi kuni!")
+                                : statusColor === "yellow"
+                                ? (t.proWidget?.warningLeft?.replace('{days}', remainingDays.toString()) || `⚠️ PRO obunangiz tugashiga ${remainingDays} kun qoldi! Imkoniyatlarni saqlab qolish uchun yangilang.`)
+                                : (t.proWidget?.activeDaysLeft?.replace('{days}', remainingDays.toString()) || `⭐ PRO obuna faol: ${remainingDays} kun qoldi`)}
+                            </h4>
+                          )}
+                          {!isLifetime && (
+                            <p className="text-sm text-muted-foreground mt-1 max-w-[90%]">
+                              {t.proWidget?.expiresAt?.replace('{date}', new Date(currentMaster.pro_expires_at).toLocaleDateString()) || `(Tugash sanasi: ${new Date(currentMaster.pro_expires_at).toLocaleDateString()})`}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-2 w-full sm:w-auto shrink-0">
+                        {(statusColor === "yellow" || statusColor === "red") && (
+                          <button 
+                            onClick={() => setIsPricingModalOpen(true)}
+                            className="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+                          >
+                            {t.proWidget?.renewBtn || "Yangilash"}
+                          </button>
+                        )}
+                        <button 
+                          onClick={handleCancelPro}
+                          className="bg-red-500/10 text-red-500 hover:bg-red-500/20 font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+                        >
+                          {t.proWidget?.cancelBtn || "Obunani bekor qilish"}
+                        </button>
+                      </div>
                     </div>
                   </div>
-                  <button 
-                    onClick={handleCancelPro}
-                    className="bg-red-500/10 text-red-500 hover:bg-red-500/20 font-bold py-2 px-4 rounded-lg text-sm transition-colors w-full sm:w-auto shrink-0"
-                  >
-                    Obunani bekor qilish
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-gradient-to-br from-amber-500/10 to-orange-600/10 border border-amber-500/20 rounded-xl p-5 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-3">
-                  <span className="bg-amber-500 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider shadow-sm">
-                    PRO
-                  </span>
-                </div>
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-orange-500/20">
-                    <ImageIcon className="w-6 h-6 text-white" />
+                );
+              } else {
+                return (
+                  <div className="bg-gradient-to-br from-amber-500/10 to-orange-600/10 border border-amber-500/20 rounded-xl p-5 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-3">
+                      <span className="bg-amber-500 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider shadow-sm">
+                        PRO
+                      </span>
+                    </div>
+                    <div className="flex gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-orange-500/20">
+                        <ImageIcon className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-foreground">{t.dashboard?.proTeaserTitle || "Profil dizaynini sozlash"}</h4>
+                        <p className="text-sm text-muted-foreground mt-1 max-w-[90%]">
+                          {t.dashboard?.proTeaserDesc || "PRO tarifida profil ranglari va foni dizaynini o'zgartirish imkoniyati mavjud. O'z profilingizni ajratib ko'rsating!"}
+                        </p>
+                        <button 
+                          onClick={() => setIsPricingModalOpen(true)}
+                          className="mt-3 text-sm font-semibold text-amber-500 group-hover:text-amber-600 transition-colors flex items-center gap-1"
+                        >
+                          {t.dashboard?.proTeaserBtn || "Tarifni yangilash →"}
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-bold text-foreground">{t.dashboard?.proTeaserTitle || "Profil dizaynini sozlash"}</h4>
-                    <p className="text-sm text-muted-foreground mt-1 max-w-[90%]">
-                      {t.dashboard?.proTeaserDesc || "PRO tarifida profil ranglari va foni dizaynini o'zgartirish imkoniyati mavjud. O'z profilingizni ajratib ko'rsating!"}
-                    </p>
-                    <button 
-                      onClick={() => setIsPricingModalOpen(true)}
-                      className="mt-3 text-sm font-semibold text-amber-500 group-hover:text-amber-600 transition-colors flex items-center gap-1"
-                    >
-                      {t.dashboard?.proTeaserBtn || "Tarifni yangilash →"}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+                );
+              }
+            })()}
           </div>
         )}
 

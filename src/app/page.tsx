@@ -73,7 +73,7 @@ export default function Home() {
     if (currentMaster) {
       setIsPricingModalOpen(true);
     } else {
-      alert("Bu tarif faqat ro'yxatdan o'tgan ustalar uchun! Usta sifatida kiring.");
+      alert(t.proPricing?.loginRequired || "Iltimos, avval usta profilingizga kiring");
     }
   };
 
@@ -277,27 +277,27 @@ export default function Home() {
           
           <div className="relative z-10 max-w-xl">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/10 text-red-500 text-xs font-bold uppercase tracking-wider mb-4 border border-red-500/20">
-              <Star className="w-3.5 h-3.5 fill-red-500" /> Ustalar Diqqatiga!
+              <Star className="w-3.5 h-3.5 fill-red-500" /> {t.proPricing?.badge || "Ustalar Diqqatiga!"}
             </div>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              UstaGo PRO orqali buyurtmalaringizni <span className="text-orange-500">5 barobarga</span> oshiring
+              {t.proPricing?.title || "Faqat ustalar uchun maxsus"}
             </h2>
             <p className="text-stone-400 mb-6">
-              Tasdiqlangan usta maqomini oling, qidiruvlarda birinchi o'ringa chiqing va faqat o'z ishingiz bilan shug'ullaning. Mijozlarni topishni bizga qo'yib bering.
+              {t.proPricing?.subtitle || "UstaGo PRO orqali buyurtmalaringizni 5 barobarga oshiring"}
             </p>
             <ul className="space-y-3 mb-8">
               <li className="flex items-center gap-3 text-stone-300 font-medium">
-                <CheckCircle2 className="w-5 h-5 text-orange-500" /> Qidiruvda 1-o'rinlarda bo'lish
+                <CheckCircle2 className="w-5 h-5 text-orange-500" /> {t.proPricing?.feature1 || "Katalogda doim 1-o'rinda turish"}
               </li>
               <li className="flex items-center gap-3 text-stone-300 font-medium">
-                <CheckCircle2 className="w-5 h-5 text-orange-500" /> Moviy galochka va Ishonch
+                <CheckCircle2 className="w-5 h-5 text-orange-500" /> {t.proPricing?.feature2 || "Profil yonida moviy galochka"}
               </li>
             </ul>
             <button 
               onClick={handleProClick}
               className="w-full sm:w-auto px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold transition-colors shadow-lg shadow-orange-500/20"
             >
-              Tariflarni ko'rish / Sotib olish
+              {t.proPricing?.getPro || "Tariflarni ko'rish / Sotib olish"}
             </button>
           </div>
           
@@ -316,13 +316,13 @@ export default function Home() {
       <section className="px-4 md:px-8 max-w-7xl mx-auto w-full mb-12">
         <div className="text-center max-w-2xl mx-auto mb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-stone-800/50 text-stone-300 text-xs font-bold uppercase tracking-wider mb-4 border border-stone-700">
-            <ShieldCheck className="w-3.5 h-3.5" /> Xavfsizlik va Shaffoflik
+            <ShieldCheck className="w-3.5 h-3.5" /> {t.terms?.badge || "Xavfsizlik va Shaffoflik"}
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Foydalanish Qoidalari va To'lov Tartibi
+            {t.terms?.title || "Foydalanish Qoidalari va To'lov Tartibi"}
           </h2>
           <p className="text-stone-400">
-            UstaGo platformasida xizmatlardan foydalanish, to'lovlarni amalga oshirish va kafolat shartlari bilan tanishing.
+            {t.terms?.desc || "UstaGo platformasida xizmatlardan foydalanish, to'lovlarni amalga oshirish va kafolat shartlari bilan tanishing."}
           </p>
         </div>
 
@@ -331,20 +331,20 @@ export default function Home() {
           <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 md:p-8 flex flex-col shadow-lg">
             <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
               <CreditCard className="w-6 h-6 text-orange-500" />
-              To'lov va PRO Xizmatini Faollashtirish Tartibi
+              {t.terms?.card1Title || "To'lov va PRO Xizmatini Faollashtirish Tartibi"}
             </h3>
             <ul className="space-y-5 text-stone-300 flex-1">
               <li className="flex items-start gap-3">
                 <div className="w-6 h-6 rounded-full bg-stone-800 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">1</div>
-                <p className="text-sm">Kerakli PRO tarifni tanlang va to'lov rekvizitlarini oling.</p>
+                <p className="text-sm">{t.terms?.card1Step1}</p>
               </li>
               <li className="flex items-start gap-3">
                 <div className="w-6 h-6 rounded-full bg-stone-800 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">2</div>
-                <p className="text-sm">To'lovni amalga oshirgach, chek ma'lumotlarini rasmiy botimizga (@UstaGo_pro_bot) yuboring.</p>
+                <p className="text-sm">{t.terms?.card1Step2}</p>
               </li>
               <li className="flex items-start gap-3">
                 <div className="w-6 h-6 rounded-full bg-stone-800 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">3</div>
-                <p className="text-sm">Arizangiz administrator tomonidan tekshirilib, PRO profilingiz 5–15 daqiqa ichida faollashtiriladi.</p>
+                <p className="text-sm">{t.terms?.card1Step3}</p>
               </li>
             </ul>
           </div>
@@ -353,28 +353,25 @@ export default function Home() {
           <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 md:p-8 flex flex-col shadow-lg">
             <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
               <FileText className="w-6 h-6 text-orange-500" />
-              Ommaviy Oferta va Shartlar (Qoidalar)
+              {t.terms?.card2Title || "Ommaviy Oferta va Shartlar (Qoidalar)"}
             </h3>
             <ul className="space-y-4 text-stone-300 flex-1">
               <li className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-stone-500 shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-bold text-white text-sm">Xizmat sharti:</span>
-                  <p className="text-sm text-stone-400 mt-1">PRO tarif ustaning platforma katalogidagi ko'rinishini oshirish va qo'shimcha imkoniyatlar berish uchun xizmat qiladi.</p>
+                  <p className="text-sm text-stone-400 mt-1">{t.terms?.card2Point1}</p>
                 </div>
               </li>
               <li className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-stone-500 shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-bold text-white text-sm">Mablag' qaytarilishi:</span>
-                  <p className="text-sm text-stone-400 mt-1">PRO xizmati darhol taqdim etilishi sababli, faollashtirilgan davr uchun to'langan mablag' qaytarib berilmaydi.</p>
+                  <p className="text-sm text-stone-400 mt-1">{t.terms?.card2Point2}</p>
                 </div>
               </li>
               <li className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-stone-500 shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-bold text-white text-sm">Javobgarlik:</span>
-                  <p className="text-sm text-stone-400 mt-1">Mijoz va Usta o'rtasidagi bajarilgan ishlar sifati uchun tomonlar o'zaro kelishuv asosida javobgardir.</p>
+                  <p className="text-sm text-stone-400 mt-1">{t.terms?.card2Point3}</p>
                 </div>
               </li>
             </ul>

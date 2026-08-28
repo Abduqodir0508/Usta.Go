@@ -172,13 +172,25 @@ export default function SuperAdminPage() {
 
   const handleTogglePro = async (id: number, currentStatus: boolean) => {
     const newStatus = !currentStatus;
+    
+    let updateData: any = { is_pro: newStatus };
+    if (newStatus) {
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 30);
+      updateData.pro_plan = "Oylik PRO (Admin)";
+      updateData.pro_expires_at = expiresAt.toISOString();
+    } else {
+      updateData.pro_plan = null;
+      updateData.pro_expires_at = null;
+    }
+
     const { error } = await supabase
       .from('ustalar')
-      .update({ is_pro: newStatus })
+      .update(updateData)
       .eq('id', id);
     
     if (!error) {
-      setMastersList(mastersList.map(m => m.id === id ? { ...m, is_pro: newStatus } : m));
+      setMastersList(mastersList.map(m => m.id === id ? { ...m, ...updateData } : m));
     } else {
       alert("Statusni o'zgartirishda xatolik!");
     }
@@ -287,20 +299,27 @@ export default function SuperAdminPage() {
                           </span>
                         </td>
                         <td className="py-4 text-center">
-                          <button
-                            onClick={() => handleTogglePro(master.id, master.is_pro)}
-                            className={cn(
-                              "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-                              master.is_pro ? "bg-orange-500" : "bg-stone-700"
-                            )}
-                          >
-                            <span
+                          <div className="flex flex-col items-center gap-1">
+                            <button
+                              onClick={() => handleTogglePro(master.id, master.is_pro)}
                               className={cn(
-                                "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
-                                master.is_pro ? "translate-x-6" : "translate-x-1"
+                                "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                                master.is_pro ? "bg-orange-500" : "bg-stone-700"
                               )}
-                            />
-                          </button>
+                            >
+                              <span
+                                className={cn(
+                                  "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                                  master.is_pro ? "translate-x-6" : "translate-x-1"
+                                )}
+                              />
+                            </button>
+                            {master.is_pro && master.pro_expires_at && (
+                              <span className="text-[10px] text-stone-400">
+                                {master.pro_expires_at.startsWith('2099') ? 'Umrbod' : `${Math.ceil((new Date(master.pro_expires_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} kun`}
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="py-4 flex justify-end gap-2">
                           <button onClick={() => handleEditClick(master)} className="p-2 bg-[#231F1C] hover:bg-stone-800 rounded-lg text-stone-400 hover:text-white transition-colors">

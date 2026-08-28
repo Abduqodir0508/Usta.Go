@@ -2,12 +2,14 @@
 
 import React from "react";
 import { XCircle, FileText } from "lucide-react";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 interface TermsModalProps {
   onClose: () => void;
 }
 
 export default function TermsModal({ onClose }: TermsModalProps) {
+  const { t } = useLanguage();
   return (
     <div className="fixed inset-0 z-[200] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
       <div className="bg-zinc-950 border border-stone-800/80 rounded-3xl w-full max-w-3xl p-6 md:p-8 shadow-2xl relative my-8">
@@ -22,7 +24,7 @@ export default function TermsModal({ onClose }: TermsModalProps) {
           <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
             <FileText className="w-5 h-5 text-orange-500" />
           </div>
-          <h2 className="text-2xl font-bold text-white">Ommaviy Oferta va Shartlar</h2>
+          <h2 className="text-2xl font-bold text-white">{t.terms?.title || "Ommaviy Oferta va Shartlar"}</h2>
         </div>
 
         <div className="text-stone-300 space-y-6 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
