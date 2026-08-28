@@ -6,8 +6,7 @@ import Link from "next/link";
 import { Search, Star, ShieldCheck, MapPin, Filter, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/components/providers/LanguageProvider";
-
-// Removed MOCK_MASTERS completely
+import { supabase } from "@/lib/supabase";
 
 export default function SearchPage() {
   const { t } = useLanguage();
@@ -17,37 +16,39 @@ export default function SearchPage() {
   const [mastersList, setMastersList] = useState<any[]>([]);
   
   useEffect(() => {
-    // Listen for storage events (from Super Admin)
-    const loadMasters = () => {
-      const stored = localStorage.getItem("usta_masters");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        // Map stored structure to match catalog structure if needed
+    const loadMasters = async () => {
+      const { data, error } = await supabase
+        .from('ustalar')
+        .select('*')
+        .eq('is_banned', false)
+        .order('is_pro', { ascending: false })
+        .order('id', { ascending: false });
+
+      if (data && !error) {
         const categoryMapping: Record<string, string> = {
           "santexnik": "plumber",
           "elektrik": "electrician",
           "mebelchi": "furniture",
           "remont": "renovation"
         };
-        const formatted = parsed.map((m: any) => ({
+        const formatted = data.map((m: any) => ({
           id: m.id.toString(),
           name: m.name,
           categoryKey: categoryMapping[m.category] || m.category,
           rating: m.rating || 5.0,
           reviews: 0,
           price: m.price ? parseInt(m.price) : 50000,
-          verified: true,
-          image: "https://i.pravatar.cc/150?u=" + m.id,
+          verified: m.is_pro,
+          image: m.avatar_url || "https://i.pravatar.cc/150?u=" + m.id,
           location: m.address || "Toshkent",
-          rawCategory: m.category
+          rawCategory: m.category,
+          is_pro: m.is_pro
         }));
         setMastersList(formatted);
       }
     };
     
     loadMasters();
-    window.addEventListener("storage", loadMasters);
-    return () => window.removeEventListener("storage", loadMasters);
   }, []);
 
   const CATEGORIES = [

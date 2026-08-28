@@ -5,6 +5,7 @@ import { Users, UserPlus, Activity, Search, Shield, Trash2, Edit2, LogOut, Check
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
+import CropModal from "@/components/modals/CropModal";
 
 const MOCK_ACTIVITY: any[] = [];
 
@@ -22,6 +23,8 @@ export default function SuperAdminPage() {
   const [formData, setFormData] = useState({
     name: "", category: "", phone: "", telegram: "", address: "", price: "", login: "", password: ""
   });
+
+  const [cropConfig, setCropConfig] = useState<{ src: string } | null>(null);
 
   useEffect(() => {
     const fetchMasters = async () => {
@@ -49,8 +52,19 @@ export default function SuperAdminPage() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setAvatarFile(e.target.files[0]);
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = () => {
+        setCropConfig({ src: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+      e.target.value = '';
     }
+  };
+
+  const handleCropComplete = async (file: File) => {
+    setAvatarFile(file);
+    setCropConfig(null);
   };
 
   const handleAddMaster = async (e: React.FormEvent) => {
@@ -142,7 +156,29 @@ export default function SuperAdminPage() {
     e.preventDefault();
     if (!editingMaster || !editingMaster.id) return;
 
+    setIsUploading(true);
     try {
+      let avatarUrl = editingMaster.avatar_url;
+
+      if (avatarFile) {
+        const fileName = `avatars/${Date.now()}_${avatarFile.name.replace(/\s+/g, '_')}`;
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('ustago-media')
+          .upload(fileName, avatarFile, {
+            cacheControl: '3600',
+            upsert: true
+          });
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('ustago-media')
+          .getPublicUrl(fileName);
+
+        avatarUrl = publicUrl;
+      }
+
       const { error } = await supabase
         .from('ustalar')
         .update({
@@ -153,20 +189,24 @@ export default function SuperAdminPage() {
           address: editingMaster.address,
           price: editingMaster.price,
           login: editingMaster.login,
-          password: editingMaster.password
+          password: editingMaster.password,
+          avatar_url: avatarUrl
         })
         .eq('id', editingMaster.id);
 
       if (error) throw error;
 
-      setMastersList(mastersList.map(m => m.id === editingMaster.id ? editingMaster : m));
+      setMastersList(mastersList.map(m => m.id === editingMaster.id ? { ...editingMaster, avatar_url: avatarUrl } : m));
       setIsEditModalOpen(false);
       setEditingMaster(null);
+      setAvatarFile(null);
       setToastMessage("Ma'lumotlar muvaffaqiyatli yangilandi!");
       setTimeout(() => setToastMessage(""), 2000);
     } catch (error) {
       console.error("Super Admin Edit (PUT) xatoligi:", error);
       alert("Ma'lumotlarni yangilashda xatolik yuz berdi!");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -347,7 +387,7 @@ export default function SuperAdminPage() {
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-stone-400 mb-1.5">Usta Rasmi (Avatar)</label>
+                  <label className="block text-sm font-medium text-stone-400 mb-1.5">Usta Rasmi (Avatar) {avatarFile && <span className="text-green-500">(Rasm tanlandi)</span>}</label>
                   <input type="file" accept="image/*" onChange={handleFileChange} className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-2 text-white focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-500 file:text-white hover:file:bg-amber-600 transition-all cursor-pointer" />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -447,6 +487,10 @@ export default function SuperAdminPage() {
             <h2 className="text-2xl font-bold text-white mb-6">Usta ma'lumotlarini tahrirlash</h2>
             <form onSubmit={handleEditSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="col-span-1 md:col-span-2">
+                  <label className="block text-sm font-medium text-stone-400 mb-1.5">Usta Rasmi (Avatar) {avatarFile && <span className="text-green-500">(Yangi rasm tanlandi)</span>}</label>
+                  <input type="file" accept="image/*" onChange={handleFileChange} className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-2 text-white focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-500 file:text-white hover:file:bg-amber-600 transition-all cursor-pointer" />
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-stone-400 mb-1.5">To'liq ism *</label>
                   <input type="text" name="name" required value={editingMaster.name || ''} onChange={e => setEditingMaster({ ...editingMaster, name: e.target.value })} className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" />
@@ -499,6 +543,15 @@ export default function SuperAdminPage() {
         </div>
       )}
 
+      {cropConfig && (
+        <CropModal
+          imageSrc={cropConfig.src}
+          shape="round"
+          aspect={1}
+          onClose={() => setCropConfig(null)}
+          onCropCompleteAction={handleCropComplete}
+        />
+      )}
     </div>
   );
 }

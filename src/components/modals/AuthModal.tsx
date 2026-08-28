@@ -6,6 +6,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -40,18 +41,36 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     onClose();
   };
 
-  const handleMasterLogin = () => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleMasterLogin = async () => {
     if (masterLogin && masterPassword) {
-      const storedMasters = JSON.parse(localStorage.getItem('usta_masters') || '[]');
-      const validMaster = storedMasters.find((m: any) => m.login === masterLogin && m.password === masterPassword);
-      
-      if (validMaster) {
-        localStorage.setItem("usta_current_master", JSON.stringify(validMaster));
-        window.dispatchEvent(new Event("auth_changed"));
-        onClose();
-        router.push("/master-dashboard");
-      } else {
-        alert("Login yoki parol xato!");
+      setIsLoading(true);
+      try {
+        const { data: usta, error } = await supabase
+          .from('ustalar')
+          .select('*')
+          .ilike('login', masterLogin.trim())
+          .eq('password', masterPassword.trim())
+          .single();
+        
+        if (usta && !error) {
+          if (usta.is_banned) {
+            alert("Akkountingiz bloklangan. Iltimos adminga murojaat qiling.");
+            return;
+          }
+          localStorage.setItem("usta_current_master", JSON.stringify(usta));
+          window.dispatchEvent(new Event("auth_changed"));
+          onClose();
+          router.push("/master-dashboard");
+        } else {
+          alert("Login yoki parol xato!");
+        }
+      } catch (err) {
+        console.error("Login error:", err);
+        alert("Xatolik yuz berdi. Qayta urinib ko'ring.");
+      } finally {
+        setIsLoading(false);
       }
     }
   };
