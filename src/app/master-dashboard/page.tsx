@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import CropModal from "@/components/modals/CropModal";
+import ProPricingModal from "@/components/modals/ProPricingModal";
 
 export default function Dashboard() {
   const { t } = useLanguage();
@@ -18,6 +19,9 @@ export default function Dashboard() {
   
   // Crop Modal state
   const [cropConfig, setCropConfig] = useState<{ src: string; type: 'avatar' | 'portfolio' } | null>(null);
+
+  // PRO Pricing Modal state
+  const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
 
   // Load from localStorage
   useEffect(() => {
@@ -156,6 +160,43 @@ export default function Dashboard() {
     }
   };
 
+  const handleCancelPro = () => {
+    if (confirm("Rostdan ham PRO obunani bekor qilmoqchimisiz? To'langan mablag' qaytarib berilmaydi!")) {
+      const updatedMaster = { ...currentMaster, is_pro: false, pro_plan: null, pro_expires_at: null };
+      setCurrentMaster(updatedMaster);
+      localStorage.setItem("usta_current_master", JSON.stringify(updatedMaster));
+      
+      const allMasters = JSON.parse(localStorage.getItem("usta_masters") || "[]");
+      const updatedAll = allMasters.map((m: any) => m.id === currentMaster.id ? updatedMaster : m);
+      localStorage.setItem("usta_masters", JSON.stringify(updatedAll));
+      
+      window.dispatchEvent(new Event("storage"));
+      alert("PRO obunangiz bekor qilindi.");
+    }
+  };
+
+  const handlePurchaseSuccess = (planName: string) => {
+    const expiresAt = new Date();
+    expiresAt.setMonth(expiresAt.getMonth() + 1); // Test mock
+
+    const updatedMaster = { 
+      ...currentMaster, 
+      is_pro: true, 
+      pro_plan: planName, 
+      pro_expires_at: expiresAt.toISOString() 
+    };
+    setCurrentMaster(updatedMaster);
+    localStorage.setItem("usta_current_master", JSON.stringify(updatedMaster));
+    
+    const allMasters = JSON.parse(localStorage.getItem("usta_masters") || "[]");
+    const updatedAll = allMasters.map((m: any) => m.id === currentMaster.id ? updatedMaster : m);
+    localStorage.setItem("usta_masters", JSON.stringify(updatedAll));
+    
+    window.dispatchEvent(new Event("storage"));
+    setIsPricingModalOpen(false);
+    alert(`${planName} muvaffaqiyatli faollashtirildi!`);
+  };
+
   // Mock Orders
   const [orders, setOrders] = useState([
     { id: 1, client: "Sardor", phone: "+998901234567", issue: "Kran oqmoqda, zudlik bilan", status: "new", date: "Bugun, 10:30" },
@@ -285,7 +326,14 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-foreground">{currentMaster?.name || "Ism familiya"}</h3>
+                    <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                      {currentMaster?.name || "Ism familiya"}
+                      {currentMaster?.is_pro && (
+                        <span title="Tasdiqlangan PRO usta" className="flex items-center">
+                          <CheckCircle2 className="w-5 h-5 text-blue-500 fill-blue-500/20" />
+                        </span>
+                      )}
+                    </h3>
                     <p className="text-amber-500 font-medium text-sm">{currentMaster?.category || "Mutaxassislik"}</p>
                   </div>
                   <p className="text-sm text-muted-foreground mt-3 line-clamp-2">
@@ -321,28 +369,60 @@ export default function Dashboard() {
               </a>
             </div>
 
-            {/* PRO Customization Teaser */}
-            <div className="bg-gradient-to-br from-amber-500/10 to-orange-600/10 border border-amber-500/20 rounded-xl p-5 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-3">
-                <span className="bg-amber-500 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider shadow-sm">
-                  PRO
-                </span>
-              </div>
-              <div className="flex gap-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-orange-500/20">
-                  <ImageIcon className="w-6 h-6 text-white" />
+            {/* PRO Customization Teaser / Status */}
+            {currentMaster?.is_pro ? (
+              <div className="bg-gradient-to-br from-green-500/10 to-emerald-600/10 border border-green-500/20 rounded-xl p-5 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-3">
+                  <span className="bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider shadow-sm">
+                    FAOL
+                  </span>
                 </div>
-                <div>
-                  <h4 className="font-bold text-foreground">{t.dashboard?.proTeaserTitle || "Profil dizaynini sozlash"}</h4>
-                  <p className="text-sm text-muted-foreground mt-1 max-w-[90%]">
-                    {t.dashboard?.proTeaserDesc || "PRO tarifida profil ranglari va foni dizaynini o'zgartirish imkoniyati mavjud. O'z profilingizni ajratib ko'rsating!"}
-                  </p>
-                  <button className="mt-3 text-sm font-semibold text-amber-500 group-hover:text-amber-600 transition-colors flex items-center gap-1">
-                    {t.dashboard?.proTeaserBtn || "Tarifni yangilash →"}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div className="flex gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-green-500/20">
+                      <CheckCircle2 className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-foreground">PRO obunangiz faol</h4>
+                      <p className="text-sm text-muted-foreground mt-1 max-w-[90%]">
+                        Joriy tarif: {currentMaster.pro_plan}. Siz barcha imtiyozlardan foydalanishingiz mumkin.
+                      </p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={handleCancelPro}
+                    className="bg-red-500/10 text-red-500 hover:bg-red-500/20 font-bold py-2 px-4 rounded-lg text-sm transition-colors w-full sm:w-auto shrink-0"
+                  >
+                    Obunani bekor qilish
                   </button>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="bg-gradient-to-br from-amber-500/10 to-orange-600/10 border border-amber-500/20 rounded-xl p-5 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-3">
+                  <span className="bg-amber-500 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider shadow-sm">
+                    PRO
+                  </span>
+                </div>
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-orange-500/20">
+                    <ImageIcon className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-foreground">{t.dashboard?.proTeaserTitle || "Profil dizaynini sozlash"}</h4>
+                    <p className="text-sm text-muted-foreground mt-1 max-w-[90%]">
+                      {t.dashboard?.proTeaserDesc || "PRO tarifida profil ranglari va foni dizaynini o'zgartirish imkoniyati mavjud. O'z profilingizni ajratib ko'rsating!"}
+                    </p>
+                    <button 
+                      onClick={() => setIsPricingModalOpen(true)}
+                      className="mt-3 text-sm font-semibold text-amber-500 group-hover:text-amber-600 transition-colors flex items-center gap-1"
+                    >
+                      {t.dashboard?.proTeaserBtn || "Tarifni yangilash →"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -401,6 +481,15 @@ export default function Dashboard() {
           aspect={cropConfig.type === 'avatar' ? 1 : 4/3}
           onClose={() => setCropConfig(null)}
           onCropCompleteAction={cropConfig.type === 'avatar' ? uploadAvatarCropped : uploadPortfolioCropped}
+        />
+      )}
+
+      {/* Pricing Modal */}
+      {isPricingModalOpen && (
+        <ProPricingModal
+          onClose={() => setIsPricingModalOpen(false)}
+          onSuccess={handlePurchaseSuccess}
+          masterData={currentMaster}
         />
       )}
     </div>
