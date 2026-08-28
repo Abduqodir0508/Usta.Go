@@ -5,6 +5,7 @@ import { ClipboardList, User, Image as ImageIcon, CheckCircle2, Phone, MessageCi
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import CropModal from "@/components/modals/CropModal";
 
 export default function Dashboard() {
   const { t } = useLanguage();
@@ -14,6 +15,9 @@ export default function Dashboard() {
   
   const [portfolioImages, setPortfolioImages] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  
+  // Crop Modal state
+  const [cropConfig, setCropConfig] = useState<{ src: string; type: 'avatar' | 'portfolio' } | null>(null);
 
   // Load from localStorage
   useEffect(() => {
@@ -38,22 +42,33 @@ export default function Dashboard() {
     if (!e.target.files || !e.target.files[0] || !currentMaster) return;
     
     const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCropConfig({ src: reader.result as string, type: 'portfolio' });
+    };
+    reader.readAsDataURL(file);
+    e.target.value = ''; // reset input
+  };
+
+  const uploadPortfolioCropped = async (file: File) => {
     setIsUploading(true);
+    setCropConfig(null);
     
     try {
-      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'png';
-      const cleanFileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
-      const filePath = `portfolio/${cleanFileName}`;
+      const fileName = `portfolio/${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
 
       const { error: uploadError } = await supabase.storage
         .from('ustago-media')
-        .upload(filePath, file);
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
 
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage
         .from('ustago-media')
-        .getPublicUrl(filePath);
+        .getPublicUrl(fileName);
 
       const updatedPortfolio = [...portfolioImages, publicUrl];
       setPortfolioImages(updatedPortfolio);
@@ -62,7 +77,6 @@ export default function Dashboard() {
       setCurrentMaster(updatedMaster);
       localStorage.setItem("usta_current_master", JSON.stringify(updatedMaster));
       
-      // Update global masters array
       const allMasters = JSON.parse(localStorage.getItem("usta_masters") || "[]");
       const updatedAll = allMasters.map((m: any) => m.id === currentMaster.id ? updatedMaster : m);
       localStorage.setItem("usta_masters", JSON.stringify(updatedAll));
@@ -81,7 +95,16 @@ export default function Dashboard() {
     if (!e.target.files || !e.target.files[0] || !currentMaster) return;
     
     const file = e.target.files[0];
-    
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCropConfig({ src: reader.result as string, type: 'avatar' });
+    };
+    reader.readAsDataURL(file);
+    e.target.value = ''; // reset input
+  };
+
+  const uploadAvatarCropped = async (file: File) => {
+    setCropConfig(null);
     try {
       const fileName = `avatars/${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
 
@@ -370,6 +393,16 @@ export default function Dashboard() {
         )}
 
       </div>
+      
+      {cropConfig && (
+        <CropModal
+          imageSrc={cropConfig.src}
+          shape={cropConfig.type === 'avatar' ? 'round' : 'rect'}
+          aspect={cropConfig.type === 'avatar' ? 1 : 4/3}
+          onClose={() => setCropConfig(null)}
+          onCropCompleteAction={cropConfig.type === 'avatar' ? uploadAvatarCropped : uploadPortfolioCropped}
+        />
+      )}
     </div>
   );
 }
