@@ -44,13 +44,13 @@ export default function ProPricingModal({ onClose, onSuccess, masterData }: ProP
     
     try {
       const message = `
-💳 <b>YANGI PRO TO'LOV SO'ROVI:</b>
-👤 <b>Usta:</b> ${masterData?.name || "Noma'lum"} (ID: ${masterData?.id || "Yo'q"})
-📞 <b>Tel:</b> ${masterData?.phone || "Yo'q"}
-📦 <b>Tarif:</b> ${selectedPlan.name}
-💰 <b>Summa:</b> ${selectedPlan.price}
+💳 <b>YANGI TEST TO'LOV (1 000 UZS):</b>
+👤 <b>Usta:</b> ${masterData?.name || "Noma'lum"}
+📞 <b>Telefon:</b> ${masterData?.phone || "Yo'q"}
+📦 <b>Tanlangan paket:</b> ${selectedPlan.name}
+💰 <b>To'langan summa:</b> 1 000 UZS
 💳 <b>Usta kartasi:</b> ${cardNumber}
-⏳ <b>Holat:</b> To'lov tekshirilmoqda / Tasdiqlandi
+⏳ <b>Holat:</b> To'lov tekshirilmoqda
 📅 <b>Sana:</b> ${new Date().toLocaleString('uz-UZ')}
       `.trim();
 
@@ -150,9 +150,10 @@ export default function ProPricingModal({ onClose, onSuccess, masterData }: ProP
                   </span>
                   <h3 className="text-2xl font-bold text-white mt-4 mb-2">Oylik PRO</h3>
                   <div className="flex items-end gap-2 mb-2">
-                    <span className="text-4xl font-extrabold text-white">0 UZS</span>
+                    <span className="text-4xl font-extrabold text-white">1 000 UZS</span>
                     <span className="text-stone-400 font-medium mb-1 line-through">77 000 UZS</span>
                   </div>
+                  <p className="text-sm font-bold text-orange-500 mb-1">Test / Sinov narxi: 1 000 UZS</p>
                   <p className="text-sm text-stone-400">1 oylik to'liq ruxsat</p>
                 </div>
 
@@ -180,7 +181,7 @@ export default function ProPricingModal({ onClose, onSuccess, masterData }: ProP
                 </div>
 
                 <button
-                  onClick={() => handleSelectPlan("Oylik PRO (1 oy)", "0 UZS")}
+                  onClick={() => handleSelectPlan("Oylik PRO (1 oy)", "1 000 UZS")}
                   className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 px-6 rounded-xl transition-colors shadow-lg shadow-orange-500/20"
                 >
                   PRO ga ulanish
@@ -199,12 +200,13 @@ export default function ProPricingModal({ onClose, onSuccess, masterData }: ProP
                     <div>
                       <h4 className="font-bold text-white text-lg">3 Oylik <span className="text-orange-500 text-sm xl:ml-1 block xl:inline">+1 oy bonus</span></h4>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-white font-bold">0 UZS</span>
+                        <span className="text-white font-bold">1 000 UZS</span>
                         <span className="text-stone-500 text-sm line-through">300 000 UZS</span>
                       </div>
+                      <p className="text-xs font-bold text-orange-500 mt-1">Test / Sinov narxi: 1 000 UZS</p>
                     </div>
                     <button
-                      onClick={() => handleSelectPlan("3 Oylik (+1 oy bonus)", "0 UZS")}
+                      onClick={() => handleSelectPlan("3 Oylik (+1 oy bonus)", "1 000 UZS")}
                       className="bg-stone-800 hover:bg-stone-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors w-full xl:w-auto"
                     >
                       Xarid qilish
@@ -215,12 +217,13 @@ export default function ProPricingModal({ onClose, onSuccess, masterData }: ProP
                     <div>
                       <h4 className="font-bold text-white text-lg">6 Oylik <span className="text-orange-500 text-sm xl:ml-1 block xl:inline">+2 oy bonus</span></h4>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-white font-bold">0 UZS</span>
+                        <span className="text-white font-bold">1 000 UZS</span>
                         <span className="text-stone-500 text-sm line-through">520 000 UZS</span>
                       </div>
+                      <p className="text-xs font-bold text-orange-500 mt-1">Test / Sinov narxi: 1 000 UZS</p>
                     </div>
                     <button
-                      onClick={() => handleSelectPlan("6 Oylik (+2 oy bonus)", "0 UZS")}
+                      onClick={() => handleSelectPlan("6 Oylik (+2 oy bonus)", "1 000 UZS")}
                       className="bg-stone-800 hover:bg-stone-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors w-full xl:w-auto"
                     >
                       Xarid qilish
@@ -234,12 +237,13 @@ export default function ProPricingModal({ onClose, onSuccess, masterData }: ProP
                         <Shield className="w-5 h-5 text-orange-500 shrink-0" /> Umrbod (Lifetime)
                       </h4>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-white font-bold">0 UZS</span>
+                        <span className="text-white font-bold">1 000 UZS</span>
                         <span className="text-stone-500 text-sm line-through">1 490 000 UZS</span>
                       </div>
+                      <p className="text-xs font-bold text-orange-500 mt-1">Test / Sinov narxi: 1 000 UZS</p>
                     </div>
                     <button
-                      onClick={() => handleSelectPlan("Umrbod (Lifetime)", "0 UZS")}
+                      onClick={() => handleSelectPlan("Umrbod (Lifetime)", "1 000 UZS")}
                       className="relative z-10 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors shadow-lg shadow-orange-500/20 w-full xl:w-auto"
                     >
                       Xarid qilish
@@ -332,6 +336,15 @@ export default function ProPricingModal({ onClose, onSuccess, masterData }: ProP
                   "To'lovni tasdiqlash"
                 )}
               </button>
+
+              <a 
+                href="https://t.me/UstaGo_pro_bot" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-center gap-2 text-stone-400 hover:text-white transition-colors mt-4 text-sm font-medium"
+              >
+                Chekni Botga Yuborish ↗
+              </a>
             </form>
           </div>
         )}

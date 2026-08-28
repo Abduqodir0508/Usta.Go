@@ -325,7 +325,7 @@ export default function Home() {
               </li>
               <li className="flex items-start gap-3">
                 <div className="w-6 h-6 rounded-full bg-stone-800 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">2</div>
-                <p className="text-sm">To'lovni amalga oshirgach, chek ma'lumotlarini rasmiy botimizga (@UstaGoAdmin_bot) yuboring.</p>
+                <p className="text-sm">To'lovni amalga oshirgach, chek ma'lumotlarini rasmiy botimizga (@UstaGo_pro_bot) yuboring.</p>
               </li>
               <li className="flex items-start gap-3">
                 <div className="w-6 h-6 rounded-full bg-stone-800 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">3</div>
