@@ -338,7 +338,7 @@ export default function ProPricingModal({ onClose, onSuccess, masterData }: ProP
               </button>
 
               <a 
-                href="https://t.me/UstaGo_pro_bot" 
+                href={`https://t.me/UstaGo_pro_bot?start=pay_${encodeURIComponent(selectedPlan?.name || "none")}_${masterData?.id || "unknown"}`}
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="w-full flex items-center justify-center gap-2 text-stone-400 hover:text-white transition-colors mt-4 text-sm font-medium"

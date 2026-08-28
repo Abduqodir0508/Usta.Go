@@ -23,23 +23,39 @@ export default function Dashboard() {
   // PRO Pricing Modal state
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
 
-  // Load from localStorage
   useEffect(() => {
-    const stored = localStorage.getItem("usta_current_master");
-    if (stored) {
-      const master = JSON.parse(stored);
-      setCurrentMaster(master);
-      setPortfolioImages(master.portfolio || []);
-    } else {
-      // Default fallback for preview
-      setCurrentMaster({
-        name: "Alisher Usta",
-        category: "Santexnik",
-        phone: "+998901234567",
-        telegram: "@alisher_usta",
-        portfolio: []
-      });
-    }
+    const fetchMasterData = async () => {
+      const stored = localStorage.getItem("usta_current_master");
+      if (stored) {
+        const localMaster = JSON.parse(stored);
+        
+        // Agar Supabase da ID bo'lsa fetch qilamiz
+        if (localMaster.id) {
+          const { data, error } = await supabase.from('ustalar').select('*').eq('id', localMaster.id).single();
+          if (data && !error) {
+            setCurrentMaster(data);
+            setPortfolioImages(data.portfolio || []);
+            localStorage.setItem("usta_current_master", JSON.stringify(data));
+          } else {
+            setCurrentMaster(localMaster);
+            setPortfolioImages(localMaster.portfolio || []);
+          }
+        } else {
+          setCurrentMaster(localMaster);
+          setPortfolioImages(localMaster.portfolio || []);
+        }
+      } else {
+        // Default fallback for preview
+        setCurrentMaster({
+          name: "Alisher Usta",
+          category: "Santexnik",
+          phone: "+998901234567",
+          telegram: "@alisher_usta",
+          portfolio: []
+        });
+      }
+    };
+    fetchMasterData();
   }, []);
 
   const handleUploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,16 +91,15 @@ export default function Dashboard() {
         .getPublicUrl(fileName);
 
       const updatedPortfolio = [...portfolioImages, publicUrl];
-      setPortfolioImages(updatedPortfolio);
       
+      if (currentMaster.id) {
+        await supabase.from('ustalar').update({ portfolio: updatedPortfolio }).eq('id', currentMaster.id);
+      }
+      
+      setPortfolioImages(updatedPortfolio);
       const updatedMaster = { ...currentMaster, portfolio: updatedPortfolio };
       setCurrentMaster(updatedMaster);
       localStorage.setItem("usta_current_master", JSON.stringify(updatedMaster));
-      
-      const allMasters = JSON.parse(localStorage.getItem("usta_masters") || "[]");
-      const updatedAll = allMasters.map((m: any) => m.id === currentMaster.id ? updatedMaster : m);
-      localStorage.setItem("usta_masters", JSON.stringify(updatedAll));
-      
       window.dispatchEvent(new Event("storage"));
       
     } catch (error) {
@@ -112,7 +127,7 @@ export default function Dashboard() {
     try {
       const fileName = `avatars/${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('ustago-media')
         .upload(fileName, file, {
           cacheControl: '3600',
@@ -125,14 +140,13 @@ export default function Dashboard() {
         .from('ustago-media')
         .getPublicUrl(fileName);
 
+      if (currentMaster.id) {
+        await supabase.from('ustalar').update({ avatar_url: publicUrl }).eq('id', currentMaster.id);
+      }
+
       const updatedMaster = { ...currentMaster, avatar_url: publicUrl, image: publicUrl };
       setCurrentMaster(updatedMaster);
       localStorage.setItem("usta_current_master", JSON.stringify(updatedMaster));
-      
-      const allMasters = JSON.parse(localStorage.getItem("usta_masters") || "[]");
-      const updatedAll = allMasters.map((m: any) => m.id === currentMaster.id ? updatedMaster : m);
-      localStorage.setItem("usta_masters", JSON.stringify(updatedAll));
-      
       window.dispatchEvent(new Event("storage"));
       
     } catch (error: any) {
@@ -141,60 +155,48 @@ export default function Dashboard() {
     }
   };
 
-  const handleDeleteImage = (urlToRemove: string) => {
+  const handleDeleteImage = async (urlToRemove: string) => {
     if (!confirm("Ushbu rasmni o'chirishni xohlaysizmi?")) return;
     
     const updatedPortfolio = portfolioImages.filter(url => url !== urlToRemove);
+    
+    if (currentMaster?.id) {
+      await supabase.from('ustalar').update({ portfolio: updatedPortfolio }).eq('id', currentMaster.id);
+    }
+    
     setPortfolioImages(updatedPortfolio);
     
     if (currentMaster) {
       const updatedMaster = { ...currentMaster, portfolio: updatedPortfolio };
       setCurrentMaster(updatedMaster);
       localStorage.setItem("usta_current_master", JSON.stringify(updatedMaster));
-      
-      const allMasters = JSON.parse(localStorage.getItem("usta_masters") || "[]");
-      const updatedAll = allMasters.map((m: any) => m.id === currentMaster.id ? updatedMaster : m);
-      localStorage.setItem("usta_masters", JSON.stringify(updatedAll));
-      
       window.dispatchEvent(new Event("storage"));
     }
   };
 
-  const handleCancelPro = () => {
+  const handleCancelPro = async () => {
     if (confirm("Rostdan ham PRO obunani bekor qilmoqchimisiz? To'langan mablag' qaytarib berilmaydi!")) {
+      
+      if (currentMaster?.id) {
+        await supabase.from('ustalar').update({ 
+          is_pro: false, 
+          pro_plan: null, 
+          pro_expires_at: null 
+        }).eq('id', currentMaster.id);
+      }
+
       const updatedMaster = { ...currentMaster, is_pro: false, pro_plan: null, pro_expires_at: null };
       setCurrentMaster(updatedMaster);
       localStorage.setItem("usta_current_master", JSON.stringify(updatedMaster));
-      
-      const allMasters = JSON.parse(localStorage.getItem("usta_masters") || "[]");
-      const updatedAll = allMasters.map((m: any) => m.id === currentMaster.id ? updatedMaster : m);
-      localStorage.setItem("usta_masters", JSON.stringify(updatedAll));
-      
       window.dispatchEvent(new Event("storage"));
       alert("PRO obunangiz bekor qilindi.");
     }
   };
 
   const handlePurchaseSuccess = (planName: string) => {
-    const expiresAt = new Date();
-    expiresAt.setMonth(expiresAt.getMonth() + 1); // Test mock
-
-    const updatedMaster = { 
-      ...currentMaster, 
-      is_pro: true, 
-      pro_plan: planName, 
-      pro_expires_at: expiresAt.toISOString() 
-    };
-    setCurrentMaster(updatedMaster);
-    localStorage.setItem("usta_current_master", JSON.stringify(updatedMaster));
-    
-    const allMasters = JSON.parse(localStorage.getItem("usta_masters") || "[]");
-    const updatedAll = allMasters.map((m: any) => m.id === currentMaster.id ? updatedMaster : m);
-    localStorage.setItem("usta_masters", JSON.stringify(updatedAll));
-    
-    window.dispatchEvent(new Event("storage"));
+    // Endi bot orqali tasdiqlanadi, shuning uchun bu shunchaki modalni yopish uchun
     setIsPricingModalOpen(false);
-    alert(`${planName} muvaffaqiyatli faollashtirildi!`);
+    alert("Chek muvaffaqiyatli yuborildi! Admin tasdiqlashini kuting.");
   };
 
   // Mock Orders

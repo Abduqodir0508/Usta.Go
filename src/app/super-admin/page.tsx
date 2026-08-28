@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 
-const INITIAL_MASTERS: any[] = [];
 const MOCK_ACTIVITY: any[] = [];
 
 export default function SuperAdminPage() {
@@ -25,13 +24,15 @@ export default function SuperAdminPage() {
   });
 
   useEffect(() => {
-    const stored = localStorage.getItem("usta_masters");
-    if (stored) {
-      setMastersList(JSON.parse(stored));
-    } else {
-      localStorage.setItem("usta_masters", JSON.stringify(INITIAL_MASTERS));
-      setMastersList(INITIAL_MASTERS);
-    }
+    const fetchMasters = async () => {
+      const { data, error } = await supabase.from('ustalar').select('*').order('id', { ascending: false });
+      if (error) {
+        console.error("Error fetching masters:", error);
+      } else if (data) {
+        setMastersList(data);
+      }
+    };
+    fetchMasters();
   }, []);
 
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -81,69 +82,84 @@ export default function SuperAdminPage() {
 
         avatarUrl = publicUrl;
       }
+
+      const newMaster = {
+        name: formData.name,
+        category: formData.category,
+        phone: formData.phone,
+        telegram: formData.telegram,
+        address: formData.address,
+        price: formData.price ? parseInt(formData.price) : 0,
+        login: formData.login,
+        password: formData.password,
+        avatar_url: avatarUrl || null,
+        is_pro: false,
+        pro_plan: null,
+        pro_expires_at: null,
+        is_banned: false
+      };
+
+      const { data, error } = await supabase.from('ustalar').insert([newMaster]).select();
+      
+      if (error) throw error;
+      
+      if (data) {
+        setMastersList([data[0], ...mastersList]);
+        setFormData({ name: "", category: "", phone: "", telegram: "", address: "", price: "", login: "", password: "" });
+        setAvatarFile(null);
+        setToastMessage("Usta muvaffaqiyatli qo'shildi!");
+        
+        setTimeout(() => {
+          setToastMessage("");
+          setActiveTab("masters");
+        }, 2000);
+      }
     } catch (error: any) {
-      console.error("Storage upload error:", error);
-      alert('Rasm yuklashda xatolik yuz berdi!');
+      console.error("Xatolik yuz berdi:", error);
+      alert('Ma\'lumotlarni saqlashda xatolik yuz berdi!');
+    } finally {
       setIsUploading(false);
-      return;
     }
-
-    const newMaster = {
-      id: Date.now(),
-      ...formData,
-      image: avatarUrl || undefined,
-      status: "active",
-      rating: 5.0
-    };
-
-    const updatedMasters = [...mastersList, newMaster];
-    setMastersList(updatedMasters);
-    localStorage.setItem("usta_masters", JSON.stringify(updatedMasters));
-    
-    // Simulate Supabase global event (if we were using realtime)
-    window.dispatchEvent(new Event("storage"));
-
-    setFormData({ name: "", category: "", phone: "", telegram: "", address: "", price: "", login: "", password: "" });
-    setAvatarFile(null);
-    setToastMessage("Usta muvaffaqiyatli qo'shildi!");
-    setIsUploading(false);
-    
-    setTimeout(() => {
-      setToastMessage("");
-      setActiveTab("masters");
-    }, 2000);
   };
 
-  const handleDeleteMaster = (id: number) => {
+  const handleDeleteMaster = async (id: number) => {
     if (confirm("Ushbu ustani o'chirishni xohlaysizmi?")) {
-      const updated = mastersList.filter(m => m.id !== id);
-      setMastersList(updated);
-      localStorage.setItem("usta_masters", JSON.stringify(updated));
+      const { error } = await supabase.from('ustalar').delete().eq('id', id);
+      if (!error) {
+        setMastersList(mastersList.filter(m => m.id !== id));
+      } else {
+        alert("O'chirishda xatolik yuz berdi.");
+      }
     }
   };
 
   const handleEditClick = (master: any) => {
-    setEditingMaster({ ...master }); // Eski ma'lumotlarni to'liq nusxalash
+    setEditingMaster({ ...master });
     setIsEditModalOpen(true);
   };
 
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingMaster || !editingMaster.id) {
-      console.error("PUT Xatolik: Ustaning ID'si topilmadi (undefined)");
-      return;
-    }
+    if (!editingMaster || !editingMaster.id) return;
 
     try {
-      // 1. Bazani yangilash (Bu yerda localStorage ishlatilyapti)
-      const updatedList = mastersList.map(m => m.id === editingMaster.id ? editingMaster : m);
-      
-      // 2. State va LocalStorage ni re-fetch / update qilish
-      setMastersList(updatedList);
-      localStorage.setItem("usta_masters", JSON.stringify(updatedList));
-      window.dispatchEvent(new Event("storage"));
+      const { error } = await supabase
+        .from('ustalar')
+        .update({
+          name: editingMaster.name,
+          category: editingMaster.category,
+          phone: editingMaster.phone,
+          telegram: editingMaster.telegram,
+          address: editingMaster.address,
+          price: editingMaster.price,
+          login: editingMaster.login,
+          password: editingMaster.password
+        })
+        .eq('id', editingMaster.id);
 
-      // 3. UI modalni yopish va Toas xabar chiqarish
+      if (error) throw error;
+
+      setMastersList(mastersList.map(m => m.id === editingMaster.id ? editingMaster : m));
       setIsEditModalOpen(false);
       setEditingMaster(null);
       setToastMessage("Ma'lumotlar muvaffaqiyatli yangilandi!");
@@ -151,6 +167,20 @@ export default function SuperAdminPage() {
     } catch (error) {
       console.error("Super Admin Edit (PUT) xatoligi:", error);
       alert("Ma'lumotlarni yangilashda xatolik yuz berdi!");
+    }
+  };
+
+  const handleTogglePro = async (id: number, currentStatus: boolean) => {
+    const newStatus = !currentStatus;
+    const { error } = await supabase
+      .from('ustalar')
+      .update({ is_pro: newStatus })
+      .eq('id', id);
+    
+    if (!error) {
+      setMastersList(mastersList.map(m => m.id === id ? { ...m, is_pro: newStatus } : m));
+    } else {
+      alert("Statusni o'zgartirishda xatolik!");
     }
   };
 
@@ -235,22 +265,42 @@ export default function SuperAdminPage() {
                       <th className="pb-3 font-medium">Ism-Familiya</th>
                       <th className="pb-3 font-medium">Kategoriya</th>
                       <th className="pb-3 font-medium">Telefon</th>
-                      <th className="pb-3 font-medium">Login</th>
                       <th className="pb-3 font-medium">Status</th>
+                      <th className="pb-3 font-medium text-center">PRO Status</th>
                       <th className="pb-3 font-medium text-right">Harakatlar</th>
                     </tr>
                   </thead>
                   <tbody>
                     {mastersList.map(master => (
                       <tr key={master.id} className="border-b border-stone-800/50">
-                        <td className="py-4 text-white font-medium">{master.name}</td>
+                        <td className="py-4 text-white font-medium flex items-center gap-2">
+                          {master.name}
+                          {master.is_pro && (
+                            <CheckCircle2 className="w-4 h-4 text-orange-500" />
+                          )}
+                        </td>
                         <td className="py-4 text-stone-400 capitalize">{master.category}</td>
                         <td className="py-4 text-stone-400">{master.phone}</td>
-                        <td className="py-4 text-stone-500 font-mono">{master.login}</td>
                         <td className="py-4">
-                          <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20">
-                            Faol
+                          <span className={cn("px-2.5 py-1 text-xs font-semibold rounded-full border", master.is_banned ? "bg-red-500/10 text-red-500 border-red-500/20" : "bg-amber-500/10 text-amber-500 border-amber-500/20")}>
+                            {master.is_banned ? "Banned" : "Faol"}
                           </span>
+                        </td>
+                        <td className="py-4 text-center">
+                          <button
+                            onClick={() => handleTogglePro(master.id, master.is_pro)}
+                            className={cn(
+                              "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                              master.is_pro ? "bg-orange-500" : "bg-stone-700"
+                            )}
+                          >
+                            <span
+                              className={cn(
+                                "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                                master.is_pro ? "translate-x-6" : "translate-x-1"
+                              )}
+                            />
+                          </button>
                         </td>
                         <td className="py-4 flex justify-end gap-2">
                           <button onClick={() => handleEditClick(master)} className="p-2 bg-[#231F1C] hover:bg-stone-800 rounded-lg text-stone-400 hover:text-white transition-colors">

@@ -11,6 +11,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useState, useEffect } from "react";
 import ProPricingModal from "@/components/modals/ProPricingModal";
 import TermsModal from "@/components/modals/TermsModal";
+import { supabase } from "@/lib/supabase";
 
 export default function Home() {
   const { t } = useLanguage();
@@ -20,17 +21,18 @@ export default function Home() {
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
 
   useEffect(() => {
-    const loadMasters = () => {
-      const stored = localStorage.getItem("usta_masters");
-      if (stored) {
-        const parsed = JSON.parse(stored);
+    const loadMasters = async () => {
+      // 1. Fetch featured masters from Supabase
+      const { data, error } = await supabase.from('ustalar').select('*').limit(3).order('id', { ascending: false });
+      
+      if (data && !error) {
         const categoryMapping: Record<string, string> = {
           "santexnik": "plumber",
           "elektrik": "electrician",
           "mebelchi": "furniture",
           "remont": "renovation"
         };
-        const formatted = parsed.slice(0, 3).map((m: any) => ({
+        const formatted = data.map((m: any) => ({
           id: m.id.toString(),
           name: m.name,
           categoryId: categoryMapping[m.category] || m.category,
@@ -41,9 +43,22 @@ export default function Home() {
         setFeaturedMasters(formatted);
       }
       
+      // 2. Load current logged in master
       const loggedIn = localStorage.getItem("usta_current_master");
       if (loggedIn) {
-        setCurrentMaster(JSON.parse(loggedIn));
+        const localMaster = JSON.parse(loggedIn);
+        // Refresh current user data from Supabase
+        if (localMaster.id) {
+          const { data: userData } = await supabase.from('ustalar').select('*').eq('id', localMaster.id).single();
+          if (userData) {
+            setCurrentMaster(userData);
+            localStorage.setItem("usta_current_master", JSON.stringify(userData));
+          } else {
+            setCurrentMaster(localMaster);
+          }
+        } else {
+          setCurrentMaster(localMaster);
+        }
       } else {
         setCurrentMaster(null);
       }
