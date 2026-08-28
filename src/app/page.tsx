@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Search, Star, ShieldCheck, MapPin, MessageSquare, Wrench, ChevronRight, Zap, BadgeCheck, CreditCard, FileText, AlertCircle } from "lucide-react";
+import { Search, Star, ShieldCheck, MapPin, MessageSquare, Wrench, ChevronRight, Zap, BadgeCheck, CreditCard, FileText, AlertCircle, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
