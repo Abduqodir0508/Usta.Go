@@ -41,9 +41,9 @@ export default function Dashboard() {
     setIsUploading(true);
     
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random()}.${fileExt}`;
-      const filePath = `portfolio/${fileName}`;
+      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'png';
+      const cleanFileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+      const filePath = `portfolio/${cleanFileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('ustago-media')
@@ -83,9 +83,9 @@ export default function Dashboard() {
     const file = e.target.files[0];
     
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `avatar-${Date.now()}-${Math.random()}.${fileExt}`;
-      const filePath = `avatars/${fileName}`;
+      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'png';
+      const cleanFileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+      const filePath = `avatars/${cleanFileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('ustago-media')

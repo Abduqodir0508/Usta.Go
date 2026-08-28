@@ -61,9 +61,9 @@ export default function SuperAdminPage() {
 
     try {
       if (avatarFile) {
-        const fileExt = avatarFile.name.split('.').pop();
-        const fileName = `${Date.now()}-${Math.random()}.${fileExt}`;
-        const filePath = `avatars/${fileName}`;
+        const fileExt = avatarFile.name.split('.').pop()?.toLowerCase() || 'png';
+        const cleanFileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+        const filePath = `avatars/${cleanFileName}`;
 
         const { error: uploadError } = await supabase.storage
           .from('ustago-media')
