@@ -9,10 +9,13 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 // Removed MOCK_MASTERS completely
 
 import { useState, useEffect } from "react";
+import ProPricingModal from "@/components/modals/ProPricingModal";
 
 export default function Home() {
   const { t } = useLanguage();
   const [featuredMasters, setFeaturedMasters] = useState<any[]>([]);
+  const [currentMaster, setCurrentMaster] = useState<any>(null);
+  const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
 
   useEffect(() => {
     const loadMasters = () => {
@@ -33,7 +36,15 @@ export default function Home() {
           price: m.price ? parseInt(m.price) : 50000,
           image: m.avatar_url || "https://i.pravatar.cc/150?u=" + m.id,
         }));
+        }));
         setFeaturedMasters(formatted);
+      }
+      
+      const loggedIn = localStorage.getItem("usta_current_master");
+      if (loggedIn) {
+        setCurrentMaster(JSON.parse(loggedIn));
+      } else {
+        setCurrentMaster(null);
       }
     };
     
@@ -41,6 +52,35 @@ export default function Home() {
     window.addEventListener("storage", loadMasters);
     return () => window.removeEventListener("storage", loadMasters);
   }, []);
+
+  const handleProClick = () => {
+    if (currentMaster) {
+      setIsPricingModalOpen(true);
+    } else {
+      alert("Bu tarif faqat ro'yxatdan o'tgan ustalar uchun! Usta sifatida kiring.");
+    }
+  };
+
+  const handlePurchaseSuccess = (planName: string) => {
+    const expiresAt = new Date();
+    expiresAt.setMonth(expiresAt.getMonth() + 1);
+
+    const updatedMaster = { 
+      ...currentMaster, 
+      is_pro: true, 
+      pro_plan: planName, 
+      pro_expires_at: expiresAt.toISOString() 
+    };
+    setCurrentMaster(updatedMaster);
+    localStorage.setItem("usta_current_master", JSON.stringify(updatedMaster));
+    
+    const allMasters = JSON.parse(localStorage.getItem("usta_masters") || "[]");
+    const updatedAll = allMasters.map((m: any) => m.id === currentMaster.id ? updatedMaster : m);
+    localStorage.setItem("usta_masters", JSON.stringify(updatedAll));
+    
+    window.dispatchEvent(new Event("storage"));
+    setIsPricingModalOpen(false);
+  };
 
   return (
     <div className="flex flex-col gap-24 pb-24">
@@ -214,6 +254,55 @@ export default function Home() {
         </div>
       </section>
 
+      {/* 5. PRO Tariflar Bloki (For Masters) */}
+      <section className="px-4 md:px-8 max-w-7xl mx-auto w-full mb-12">
+        <div className="bg-zinc-900 border border-orange-500/20 rounded-3xl p-8 md:p-12 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8 group">
+          <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-64 h-64 bg-orange-500/10 blur-3xl rounded-full transition-transform group-hover:scale-150"></div>
+          
+          <div className="relative z-10 max-w-xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/10 text-red-500 text-xs font-bold uppercase tracking-wider mb-4 border border-red-500/20">
+              <Star className="w-3.5 h-3.5 fill-red-500" /> Ustalar Diqqatiga!
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              UstaGo PRO orqali buyurtmalaringizni <span className="text-orange-500">5 barobarga</span> oshiring
+            </h2>
+            <p className="text-stone-400 mb-6">
+              Tasdiqlangan usta maqomini oling, qidiruvlarda birinchi o'ringa chiqing va faqat o'z ishingiz bilan shug'ullaning. Mijozlarni topishni bizga qo'yib bering.
+            </p>
+            <ul className="space-y-3 mb-8">
+              <li className="flex items-center gap-3 text-stone-300 font-medium">
+                <CheckCircle2 className="w-5 h-5 text-orange-500" /> Qidiruvda 1-o'rinlarda bo'lish
+              </li>
+              <li className="flex items-center gap-3 text-stone-300 font-medium">
+                <CheckCircle2 className="w-5 h-5 text-orange-500" /> Moviy galochka va Ishonch
+              </li>
+            </ul>
+            <button 
+              onClick={handleProClick}
+              className="w-full sm:w-auto px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold transition-colors shadow-lg shadow-orange-500/20"
+            >
+              Tariflarni ko'rish / Sotib olish
+            </button>
+          </div>
+          
+          <div className="relative z-10 hidden md:block">
+            <div className="w-48 h-48 bg-zinc-950 border border-stone-800 rounded-full flex items-center justify-center relative shadow-2xl">
+              <ShieldCheck className="w-24 h-24 text-orange-500" />
+              <div className="absolute -bottom-2 -right-2 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-lg shadow-lg">
+                PRO USTA
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {isPricingModalOpen && currentMaster && (
+        <ProPricingModal 
+          onClose={() => setIsPricingModalOpen(false)} 
+          onSuccess={handlePurchaseSuccess} 
+          masterData={currentMaster} 
+        />
+      )}
     </div>
   );
 }
