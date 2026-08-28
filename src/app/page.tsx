@@ -36,7 +36,6 @@ export default function Home() {
           price: m.price ? parseInt(m.price) : 50000,
           image: m.avatar_url || "https://i.pravatar.cc/150?u=" + m.id,
         }));
-        }));
         setFeaturedMasters(formatted);
       }
       
