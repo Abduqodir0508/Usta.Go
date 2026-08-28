@@ -98,6 +98,7 @@ export const dictionary = {
       editNoticeTitle: "Ma'lumotlarni o'zgartirish",
       editNoticeDesc: "Ma'lumotlarni o'zgartirish uchun adminga murojaat qiling",
       editNoticeBtn: "Adminga yozish",
+      proTeaserTitle: "Profil dizaynini sozlash",
       proTeaserDesc: "PRO tarifida profil ranglari va foni dizaynini o'zgartirish imkoniyati mavjud. O'z profilingizni ajratib ko'rsating!",
       proTeaserBtn: "Tarifni yangilash →"
     },
@@ -216,6 +217,7 @@ export const dictionary = {
       editNoticeTitle: "Редактирование данных",
       editNoticeDesc: "Для изменения информации обратитесь к администратору",
       editNoticeBtn: "Связаться с админом",
+      proTeaserTitle: "Настройка дизайна профиля",
       proTeaserDesc: "На тарифе PRO доступно изменение цвета и фона профиля. Сделайте ваш профиль уникальным!",
       proTeaserBtn: "Обновить тариф →"
     },
@@ -334,6 +336,7 @@ export const dictionary = {
       editNoticeTitle: "Edit Information",
       editNoticeDesc: "To change profile details, contact the administrator",
       editNoticeBtn: "Contact Admin",
+      proTeaserTitle: "Customize Profile Design",
       proTeaserDesc: "Change background themes and colors with PRO plan. Stand out from the crowd!",
       proTeaserBtn: "Upgrade Plan →"
     },
