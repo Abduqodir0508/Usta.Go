@@ -86,37 +86,30 @@ export default function Dashboard() {
     setCropConfig(null);
     
     try {
-      const fileName = `portfolio/${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('ustago-media')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: true
-        });
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('ustago-media')
-        .getPublicUrl(fileName);
-
-      const updatedPortfolio = [...portfolioImages, publicUrl];
-      
-      if (currentMaster.id) {
-        await supabase.from('ustalar').update({ portfolio: updatedPortfolio }).eq('id', currentMaster.id);
-      }
-      
-      setPortfolioImages(updatedPortfolio);
-      const updatedMaster = { ...currentMaster, portfolio: updatedPortfolio };
-      setCurrentMaster(updatedMaster);
-      localStorage.setItem("usta_current_master", JSON.stringify(updatedMaster));
-      window.dispatchEvent(new Event("storage"));
-      
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64Str = reader.result as string;
+        const updatedPortfolio = [...portfolioImages, base64Str];
+        
+        if (currentMaster.id) {
+          await supabase.from('ustalar').update({ portfolio: updatedPortfolio }).eq('id', currentMaster.id);
+        }
+        
+        setPortfolioImages(updatedPortfolio);
+        const updatedMaster = { ...currentMaster, portfolio: updatedPortfolio };
+        setCurrentMaster(updatedMaster);
+        localStorage.setItem("usta_current_master", JSON.stringify(updatedMaster));
+        window.dispatchEvent(new Event("storage"));
+        setIsUploading(false);
+      };
+      reader.onerror = () => {
+        alert("Rasmni o'qishda xatolik yuz berdi!");
+        setIsUploading(false);
+      };
+      reader.readAsDataURL(file);
     } catch (error) {
       console.error('Error uploading portfolio image:', error);
       alert('Rasm yuklashda xatolik yuz berdi!');
-    } finally {
       setIsUploading(false);
     }
   };
@@ -136,32 +129,25 @@ export default function Dashboard() {
   const uploadAvatarCropped = async (file: File) => {
     setCropConfig(null);
     try {
-      const fileName = `avatars/${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64Str = reader.result as string;
+        
+        if (currentMaster.id) {
+          await supabase.from('ustalar').update({ avatar_url: base64Str }).eq('id', currentMaster.id);
+        }
 
-      const { error: uploadError } = await supabase.storage
-        .from('ustago-media')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: true
-        });
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('ustago-media')
-        .getPublicUrl(fileName);
-
-      if (currentMaster.id) {
-        await supabase.from('ustalar').update({ avatar_url: publicUrl }).eq('id', currentMaster.id);
-      }
-
-      const updatedMaster = { ...currentMaster, avatar_url: publicUrl, image: publicUrl };
-      setCurrentMaster(updatedMaster);
-      localStorage.setItem("usta_current_master", JSON.stringify(updatedMaster));
-      window.dispatchEvent(new Event("storage"));
-      
+        const updatedMaster = { ...currentMaster, avatar_url: base64Str, image: base64Str };
+        setCurrentMaster(updatedMaster);
+        localStorage.setItem("usta_current_master", JSON.stringify(updatedMaster));
+        window.dispatchEvent(new Event("storage"));
+      };
+      reader.onerror = () => {
+        alert("Avatar rasmini o'qishda xatolik yuz berdi!");
+      };
+      reader.readAsDataURL(file);
     } catch (error: any) {
-      console.error("Storage upload error:", error);
+      console.error("Avatar Base64 upload error:", error);
       alert('Avatar yuklashda xatolik yuz berdi!');
     }
   };

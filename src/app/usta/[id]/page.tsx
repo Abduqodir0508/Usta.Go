@@ -4,37 +4,68 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Star, ShieldCheck, MapPin, CheckCircle2, Phone, MessageCircle, ChevronLeft } from "lucide-react";
-import { useParams } from "next/navigation";
+import { useParams, notFound } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 export default function UstaProfile() {
   const params = useParams();
   const id = params.id as string;
   const [master, setMaster] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem("usta_masters");
-    if (stored) {
-      const allMasters = JSON.parse(stored);
-      const found = allMasters.find((m: any) => m.id.toString() === id);
-      if (found) {
+    const fetchMaster = async () => {
+      try {
+        const { data: found, error: err } = await supabase
+          .from('ustalar')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (err || !found) {
+          setError(true);
+          return;
+        }
+
+        const portfolioList = Array.isArray(found?.portfolio) 
+          ? found.portfolio 
+          : (typeof found?.portfolio === 'string' ? JSON.parse(found.portfolio || '[]') : []);
+
         setMaster({
           ...found,
           experience: "1 yil+", // Mock fallback for missing fields
           about: found.bio || "Assalomu alaykum! Men o'z ishimning ustasiman. Har qanday murakkablikdagi ishlarni tez va sifatli bajaraman.",
-          image: found.avatar_url || found.image || `https://i.pravatar.cc/150?u=${found.id}`,
-          portfolio: found.portfolio || [],
+          image: found.avatar_url || found.image || null, // Updated for fallback logic below
+          portfolio: portfolioList,
           services: [
             { name: "Asosiy xizmat", price: found.price ? `${found.price}` : "Kelishuv asosida" },
           ]
         });
+      } catch (e) {
+        setError(true);
+      } finally {
+        setLoading(false);
       }
-    }
+    };
+    fetchMaster();
   }, [id]);
 
-  if (!master) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center pt-20">
         <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (error || !master) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center pt-20 gap-4">
+        <h2 className="text-2xl font-bold text-foreground">Usta topilmadi!</h2>
+        <Link href="/katalog" className="bg-amber-500 text-white px-6 py-2 rounded-xl font-bold">
+          Ortga qaytish
+        </Link>
       </div>
     );
   }
@@ -52,13 +83,17 @@ export default function UstaProfile() {
       {/* Header Info */}
       <div className="p-4 md:p-8">
         <div className="flex flex-col md:flex-row md:items-start gap-6">
-          <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-border-color bg-surface flex-shrink-0 shadow-xl shadow-black/20 mx-auto md:mx-0">
-            <Image
-              src={master.image}
-              alt={master.name}
-              fill
-              className="object-cover"
-            />
+          <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-border-color bg-surface flex-shrink-0 shadow-xl mx-auto md:mx-0 flex items-center justify-center">
+            {master.image ? (
+              <Image
+                src={master.image}
+                alt={master.name}
+                fill
+                className="object-cover"
+              />
+            ) : (
+              <span className="text-4xl font-bold text-amber-500">{master.name.charAt(0).toUpperCase()}</span>
+            )}
           </div>
           
           <div className="flex-1 text-center md:text-left space-y-2">
@@ -91,10 +126,10 @@ export default function UstaProfile() {
             <MessageCircle className="w-5 h-5" />
             Telegram orqali bog'lanish
           </button>
-          <button className="flex-1 bg-surface-hover hover:bg-slate-200 dark:hover:bg-slate-800 border border-border-color text-foreground py-3.5 px-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-colors">
+          <a href={`tel:${master.phone}`} className="flex-1 bg-surface-hover hover:bg-slate-200 dark:hover:bg-slate-800 border border-border-color text-foreground py-3.5 px-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-colors">
             <Phone className="w-5 h-5" />
             Qo'ng'iroq qilish
-          </button>
+          </a>
         </div>
 
         {/* About */}
@@ -106,16 +141,20 @@ export default function UstaProfile() {
         </div>
 
         {/* Portfolio */}
-        <div className="mt-10">
-          <h2 className="text-xl font-bold text-foreground mb-4 border-b border-border-color pb-2">Bajargan ishlari</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 md:gap-4">
-            {master.portfolio.map((img: string, i: number) => (
-              <div key={i} className="relative aspect-square rounded-2xl overflow-hidden bg-surface border border-border-color">
-                <Image src={img} alt="Portfolio" fill className="object-cover hover:scale-105 transition-transform duration-300" />
-              </div>
-            ))}
+        {master.portfolio && master.portfolio.length > 0 && (
+          <div className="mt-10">
+            <h2 className="text-xl font-bold text-foreground mb-4 border-b border-border-color pb-2">Bajargan ishlari</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4">
+              {master.portfolio.map((img: string, i: number) => (
+                <div key={i} className="relative aspect-square rounded-2xl overflow-hidden bg-surface border border-border-color cursor-pointer group">
+                  <a href={img} target="_blank" rel="noopener noreferrer">
+                    <img src={img} alt={`Portfolio ${i+1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                  </a>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Price List */}
         <div className="mt-10">

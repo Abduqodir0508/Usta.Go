@@ -7,6 +7,15 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import CropModal from "@/components/modals/CropModal";
 
+const getBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = error => reject(error);
+  });
+};
+
 const MOCK_ACTIVITY: any[] = [];
 
 export default function SuperAdminPage() {
@@ -79,22 +88,7 @@ export default function SuperAdminPage() {
 
     try {
       if (avatarFile) {
-        const fileName = `avatars/${Date.now()}_${avatarFile.name.replace(/\s+/g, '_')}`;
-
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('ustago-media')
-          .upload(fileName, avatarFile, {
-            cacheControl: '3600',
-            upsert: true
-          });
-
-        if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('ustago-media')
-          .getPublicUrl(fileName);
-
-        avatarUrl = publicUrl;
+        avatarUrl = await getBase64(avatarFile);
       }
 
       const newMaster = {
@@ -161,22 +155,7 @@ export default function SuperAdminPage() {
       let avatarUrl = editingMaster.avatar_url;
 
       if (avatarFile) {
-        const fileName = `avatars/${Date.now()}_${avatarFile.name.replace(/\s+/g, '_')}`;
-
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('ustago-media')
-          .upload(fileName, avatarFile, {
-            cacheControl: '3600',
-            upsert: true
-          });
-
-        if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('ustago-media')
-          .getPublicUrl(fileName);
-
-        avatarUrl = publicUrl;
+        avatarUrl = await getBase64(avatarFile);
       }
 
       const { error } = await supabase
