@@ -19,9 +19,9 @@ export default function UstaProfile() {
       if (found) {
         setMaster({
           ...found,
-          experience: "8 yil", // Mock fallback for missing fields
-          about: "Assalomu alaykum! Men o'z ishimning ustasiman. Har qanday murakkablikdagi ishlarni tez va sifatli bajaraman.",
-          image: found.image || `https://i.pravatar.cc/150?u=${found.id}`,
+          experience: "1 yil+", // Mock fallback for missing fields
+          about: found.bio || "Assalomu alaykum! Men o'z ishimning ustasiman. Har qanday murakkablikdagi ishlarni tez va sifatli bajaraman.",
+          image: found.avatar_url || found.image || `https://i.pravatar.cc/150?u=${found.id}`,
           portfolio: found.portfolio || [],
           services: [
             { name: "Asosiy xizmat", price: found.price ? `${found.price}` : "Kelishuv asosida" },
@@ -64,9 +64,6 @@ export default function UstaProfile() {
           <div className="flex-1 text-center md:text-left space-y-2">
             <div className="flex items-center justify-center md:justify-start gap-2">
               <h1 className="text-2xl md:text-3xl font-bold text-foreground">{master.name}</h1>
-              {master.verified && (
-                <ShieldCheck className="w-6 h-6 text-green-500" />
-              )}
             </div>
             
             <p className="text-lg text-amber-500 font-medium">{master.category}</p>

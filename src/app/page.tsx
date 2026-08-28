@@ -6,14 +6,41 @@ import { Search, Star, ShieldCheck, MapPin, MessageSquare, Wrench, ChevronRight,
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
-const MOCK_MASTERS = [
-  { id: "1", name: "Alisher Usta", categoryId: "plumber", rating: 4.8, reviews: 124, price: 50000, verified: true, image: "https://i.pravatar.cc/150?u=alisher", location: "Toshkent" },
-  { id: "2", name: "Sanjar Elektrik", categoryId: "electrician", rating: 4.9, reviews: 89, price: 70000, verified: true, image: "https://i.pravatar.cc/150?u=sanjar", location: "Samarqand" },
-  { id: "3", name: "Mebelchi Jasur", categoryId: "furniture", rating: 4.6, reviews: 45, price: 150000, verified: false, image: "https://i.pravatar.cc/150?u=jasur", location: "Buxoro" },
-];
+// Removed MOCK_MASTERS completely
+
+import { useState, useEffect } from "react";
 
 export default function Home() {
   const { t } = useLanguage();
+  const [featuredMasters, setFeaturedMasters] = useState<any[]>([]);
+
+  useEffect(() => {
+    const loadMasters = () => {
+      const stored = localStorage.getItem("usta_masters");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        const categoryMapping: Record<string, string> = {
+          "santexnik": "plumber",
+          "elektrik": "electrician",
+          "mebelchi": "furniture",
+          "remont": "renovation"
+        };
+        const formatted = parsed.slice(0, 3).map((m: any) => ({
+          id: m.id.toString(),
+          name: m.name,
+          categoryId: categoryMapping[m.category] || m.category,
+          rating: m.rating || 5.0,
+          price: m.price ? parseInt(m.price) : 50000,
+          image: m.avatar_url || "https://i.pravatar.cc/150?u=" + m.id,
+        }));
+        setFeaturedMasters(formatted);
+      }
+    };
+    
+    loadMasters();
+    window.addEventListener("storage", loadMasters);
+    return () => window.removeEventListener("storage", loadMasters);
+  }, []);
 
   return (
     <div className="flex flex-col gap-24 pb-24">
@@ -155,7 +182,7 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {MOCK_MASTERS.map((master) => (
+          {featuredMasters.map((master) => (
             <Link
               key={master.id}
               href={`/usta/${master.id}`}
@@ -168,7 +195,6 @@ export default function Home() {
                 <div>
                   <h3 className="font-bold text-lg text-foreground group-hover:text-amber-500 transition-colors flex items-center gap-1">
                     {master.name}
-                    {master.verified && <ShieldCheck className="w-4 h-4 text-green-500" />}
                   </h3>
                   <p className="text-sm text-muted-foreground opacity-80">{t.categories[master.categoryId as keyof typeof t.categories] || master.categoryId}</p>
                 </div>

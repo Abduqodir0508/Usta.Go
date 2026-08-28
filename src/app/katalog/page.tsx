@@ -7,20 +7,14 @@ import { Search, Star, ShieldCheck, MapPin, Filter, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
-const MOCK_MASTERS = [
-  { id: "1", name: "Alisher Usta", categoryKey: "plumber", rating: 4.8, reviews: 124, price: 50000, verified: true, image: "https://i.pravatar.cc/150?u=alisher", location: "Toshkent, Yunusobod" },
-  { id: "2", name: "Sanjar Elektrik", categoryKey: "electrician", rating: 4.9, reviews: 89, price: 70000, verified: true, image: "https://i.pravatar.cc/150?u=sanjar", location: "Toshkent, Chilonzor" },
-  { id: "3", name: "Mebelchi Jasur", categoryKey: "furniture", rating: 4.6, reviews: 45, price: 150000, verified: false, image: "https://i.pravatar.cc/150?u=jasur", location: "Toshkent, Mirzo Ulug'bek" },
-  { id: "4", name: "Umid Santexnik", categoryKey: "plumber", rating: 4.5, reviews: 23, price: 60000, verified: true, image: "https://i.pravatar.cc/150?u=umid", location: "Toshkent, Yakkasaroy" },
-  { id: "5", name: "Remontchi Sherzod", categoryKey: "renovation", rating: 5.0, reviews: 12, price: 200000, verified: true, image: "https://i.pravatar.cc/150?u=sherzod", location: "Toshkent, Sergeli" },
-];
+// Removed MOCK_MASTERS completely
 
 export default function SearchPage() {
   const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
-  const [mastersList, setMastersList] = useState(MOCK_MASTERS);
+  const [mastersList, setMastersList] = useState<any[]>([]);
   
   useEffect(() => {
     // Listen for storage events (from Super Admin)
@@ -47,7 +41,7 @@ export default function SearchPage() {
           location: m.address || "Toshkent",
           rawCategory: m.category
         }));
-        setMastersList([...MOCK_MASTERS, ...formatted]);
+        setMastersList(formatted);
       }
     };
     
@@ -158,9 +152,6 @@ export default function SearchPage() {
                     <h3 className="font-bold text-foreground truncate group-hover:text-amber-500 transition-colors">
                       {master.name}
                     </h3>
-                    {master.verified && (
-                      <ShieldCheck className="w-4 h-4 text-green-500 flex-shrink-0" />
-                    )}
                   </div>
                   <p className="text-sm text-muted-foreground mb-2">
                     {t.categories[master.categoryKey as keyof typeof t.categories]}

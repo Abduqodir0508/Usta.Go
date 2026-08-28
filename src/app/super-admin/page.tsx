@@ -6,15 +6,8 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 
-const INITIAL_MASTERS = [
-  { id: 1, name: "Aziz Rakhimov", category: "Santexnik", phone: "+998 90 123 45 67", status: "active", telegram: "@aziz_usta", address: "Yunusobod", price: "150000", login: "aziz123", password: "123" },
-  { id: 2, name: "Sardor Aliyev", category: "Elektrik", phone: "+998 93 987 65 43", status: "active", telegram: "@sardor_elektr", address: "Chilonzor", price: "100000", login: "sardor123", password: "123" },
-];
-
-const MOCK_ACTIVITY = [
-  { id: 1, client: "Jasur", phone: "+998991112233", category: "Santexnik", time: "10 min oldin" },
-  { id: 2, client: "Malika", phone: "+998904445566", category: "Remont", time: "1 soat oldin" },
-];
+const INITIAL_MASTERS: any[] = [];
+const MOCK_ACTIVITY: any[] = [];
 
 export default function SuperAdminPage() {
   const router = useRouter();
