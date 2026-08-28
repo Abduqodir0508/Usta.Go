@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Wrench, Globe } from "lucide-react";
+import { Wrench, Globe, CheckCircle2, User, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Language } from "@/lib/dictionary";
@@ -131,38 +131,46 @@ export function TopNavbar() {
             {/* Auth/CTAs */}
             {mounted && session ? (
               <div className="flex items-center gap-3">
-                <div className="hidden sm:flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-stone-700 to-stone-800 flex items-center justify-center border border-border-color text-white font-bold text-sm">
-                    {session.name.charAt(0)}
-                  </div>
-                  <span className="text-sm font-medium text-foreground hidden md:block max-w-[100px] truncate">
-                    {session.name}
-                  </span>
-                </div>
-                
-                {session.type === 'master' && (
-                  <Link 
-                    href="/master-dashboard"
-                    className="text-sm font-semibold text-amber-500 hover:text-amber-400 transition-colors"
-                  >
-                    Kabinet
-                  </Link>
-                )}
-                {session.type === 'admin' && (
-                  <Link 
-                    href="/super-admin"
-                    className="text-sm font-semibold text-amber-500 hover:text-amber-400 transition-colors"
-                  >
-                    Admin Panel
-                  </Link>
+                {session.type === 'master' ? (
+                  <>
+                    <Link href="/master-dashboard" className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-surface rounded-full border border-border-color hover:border-amber-500/50 transition-colors cursor-pointer">
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center text-white font-bold text-xs">
+                        {session.name.charAt(0)}
+                      </div>
+                      <span className="text-sm font-bold text-foreground max-w-[100px] truncate">
+                        {session.name}
+                      </span>
+                      <CheckCircle2 className="w-4 h-4 text-blue-500" />
+                    </Link>
+                  </>
+                ) : session.type === 'client' ? (
+                  <>
+                    <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-surface rounded-full border border-border-color">
+                      <div className="w-6 h-6 rounded-full bg-stone-200 dark:bg-stone-800 flex items-center justify-center text-stone-500">
+                        <User className="w-4 h-4" />
+                      </div>
+                      <span className="text-sm font-medium text-foreground max-w-[100px] truncate">
+                        {session.name}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-surface rounded-full border border-border-color">
+                      <span className="text-sm font-bold text-amber-500">
+                        {session.name}
+                      </span>
+                    </div>
+                  </>
                 )}
                 
                 <button 
                   onClick={handleLogout}
-                  className="p-2 text-stone-400 hover:text-red-500 transition-colors"
+                  className="flex items-center gap-2 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-full transition-colors font-medium text-sm"
                   title="Chiqish"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                  <span className="hidden sm:inline">{t.dashboard?.logout || "Chiqish"}</span>
+                  <LogOut className="w-4 h-4" />
                 </button>
               </div>
             ) : (

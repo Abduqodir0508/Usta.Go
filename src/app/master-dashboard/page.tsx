@@ -1,17 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ClipboardList, User, Image as ImageIcon, CheckCircle2, Phone, MessageCircle, XCircle, Plus, UploadCloud } from "lucide-react";
+import { ClipboardList, User, Image as ImageIcon, CheckCircle2, Phone, MessageCircle, XCircle, Plus, UploadCloud, MapPin, Star, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
-
-const TABS = [
-  { id: "orders", label: "Buyurtmalar", icon: ClipboardList },
-  { id: "profile", label: "Profil", icon: User },
-  { id: "portfolio", label: "Portfolio", icon: ImageIcon },
-];
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 export default function Dashboard() {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState("orders");
   const [hasInstagram, setHasInstagram] = useState(false);
   const [currentMaster, setCurrentMaster] = useState<any>(null);
@@ -112,19 +108,23 @@ export default function Dashboard() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">
-            Boshqaruv Paneli {currentMaster ? `- ${currentMaster.name}` : ""}
+            {t.dashboard.title} {currentMaster ? `- ${currentMaster.name}` : ""}
           </h1>
           <p className="text-sm text-muted-foreground">UstaGo profilingizni va buyurtmalarni boshqaring.</p>
         </div>
         <div className="bg-amber-500/10 text-amber-500 border border-amber-500/20 px-4 py-2 rounded-xl font-medium text-sm flex items-center gap-2 w-fit">
           <CheckCircle2 className="w-4 h-4" />
-          Tarif: Faol (12 kun qoldi)
+          {t.dashboard.planActive}
         </div>
       </div>
 
       {/* Tabs */}
       <div className="flex bg-surface-hover p-1 rounded-2xl overflow-x-auto scrollbar-hide border border-border-color">
-        {TABS.map((tab) => (
+        {[
+          { id: "orders", label: t.dashboard.ordersTab, icon: ClipboardList },
+          { id: "profile", label: t.dashboard.profileTab, icon: User },
+          { id: "portfolio", label: t.dashboard.portfolioTab, icon: ImageIcon },
+        ].map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
@@ -147,7 +147,7 @@ export default function Dashboard() {
         {/* ORDERS TAB */}
         {activeTab === "orders" && (
           <div className="space-y-4">
-            <h2 className="text-lg font-bold text-foreground mb-4">Mijozlar buyurtmalari</h2>
+            <h2 className="text-lg font-bold text-foreground mb-4">{t.dashboard.ordersTitle}</h2>
             {orders.length === 0 ? (
               <div className="text-center py-10 text-muted-foreground">
                 Hozircha yangi buyurtmalar yo'q.
@@ -170,7 +170,7 @@ export default function Dashboard() {
                           order.status === "in_progress" && "bg-blue-500/20 text-blue-500",
                           order.status === "completed" && "bg-green-500/20 text-green-500"
                         )}>
-                          {order.status === "new" ? "Yangi" : order.status === "in_progress" ? "Jarayonda" : "Yakunlangan"}
+                          {order.status === "new" ? t.dashboard.statusNew : order.status === "in_progress" ? t.dashboard.statusInProgress : t.dashboard.statusCompleted}
                         </span>
                       </div>
                     </div>
@@ -180,7 +180,7 @@ export default function Dashboard() {
                         <Phone className="w-4 h-4" />
                       </a>
                       <button className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white text-sm font-bold rounded-lg transition-colors shadow-lg shadow-orange-500/20">
-                        Qabul qilish
+                        {t.dashboard.accept}
                       </button>
                     </div>
                   </div>
@@ -192,73 +192,80 @@ export default function Dashboard() {
 
         {/* PROFILE TAB */}
         {activeTab === "profile" && (
-          <div className="space-y-6 max-w-2xl">
-            <h2 className="text-lg font-bold text-foreground">Shaxsiy ma'lumotlar</h2>
-            
-            <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="space-y-8 max-w-2xl">
+            {/* Live Preview Card */}
+            <div>
+              <h2 className="text-lg font-bold text-foreground mb-4">Profil ko'rinishi (Mijozlar uchun)</h2>
+              <div className="bg-background border border-border-color rounded-2xl overflow-hidden max-w-sm shadow-sm relative">
+                <div className="h-20 bg-gradient-to-r from-stone-800 to-stone-900"></div>
+                <div className="px-5 pb-5">
+                  <div className="flex justify-between items-start -mt-10 mb-3">
+                    <div className="w-20 h-20 rounded-full border-4 border-background bg-surface flex items-center justify-center overflow-hidden">
+                      <User className="w-10 h-10 text-muted-foreground" />
+                    </div>
+                    <div className="bg-surface px-2.5 py-1 rounded-full border border-border-color flex items-center gap-1.5 shadow-sm mt-10">
+                      <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                      <span className="text-sm font-bold">5.0</span>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-foreground">{currentMaster?.name || "Ism familiya"}</h3>
+                    <p className="text-amber-500 font-medium text-sm">{currentMaster?.category || "Mutaxassislik"}</p>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-3 line-clamp-2">
+                    Assalomu alaykum! Men o'z ishimning ustasiman. Sifatli va tezkor xizmat ko'rsataman.
+                  </p>
+                  <div className="flex items-center gap-2 mt-4 text-xs font-medium text-muted-foreground">
+                    <MapPin className="w-3.5 h-3.5" /> Chilonzor tumani
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Admin Edit Lock Notice */}
+            <div className="bg-surface-hover border border-border-color rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-start gap-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-2 flex-shrink-0" />
-                <p className="text-sm text-amber-500/90 leading-relaxed">
-                  Ism yoki kategoriyani o'zgartirish uchun admin bilan bog'laning.
-                </p>
+                <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                  <Lock className="w-5 h-5 text-blue-500" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-foreground text-sm">Ma'lumotlarni o'zgartirish</h4>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    Ma'lumotlarni o'zgartirish uchun adminga murojaat qiling
+                  </p>
+                </div>
               </div>
               <a 
                 href="https://t.me/A_Husanboyev" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 text-xs font-bold py-2 px-4 rounded-lg transition-colors whitespace-nowrap flex items-center gap-2"
+                className="bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold py-2 px-4 rounded-lg transition-colors whitespace-nowrap"
               >
-                <MessageCircle className="w-4 h-4" />
-                Admin bilan bog'lanish
+                Adminga yozish
               </a>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-muted-foreground">Ism va Familiya</label>
-                <input type="text" readOnly defaultValue={currentMaster?.name || "Alisher Usta"} className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl opacity-70 cursor-not-allowed focus:outline-none" />
+            {/* PRO Customization Teaser */}
+            <div className="bg-gradient-to-br from-amber-500/10 to-orange-600/10 border border-amber-500/20 rounded-xl p-5 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-3">
+                <span className="bg-amber-500 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider shadow-sm">
+                  PRO
+                </span>
               </div>
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-muted-foreground">Mutaxassislik</label>
-                <input type="text" readOnly defaultValue={currentMaster?.category || "Santexnik"} className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl opacity-70 cursor-not-allowed focus:outline-none capitalize" />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-muted-foreground">O'zingiz haqingizda</label>
-              <textarea rows={4} readOnly defaultValue="Assalomu alaykum! Men o'z ishimning ustasiman." className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl opacity-70 cursor-not-allowed focus:outline-none"></textarea>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-muted-foreground">Telefon raqam</label>
-                <input type="tel" readOnly defaultValue={currentMaster?.phone || "+998901234567"} className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl opacity-70 cursor-not-allowed focus:outline-none" />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-muted-foreground">Telegram Username</label>
-                <input type="text" readOnly defaultValue={currentMaster?.telegram || "@alisher_usta"} className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl opacity-70 cursor-not-allowed focus:outline-none" />
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-border-color">
-              <label className="flex items-center gap-3 cursor-pointer">
-                <div className="relative flex items-center">
-                  <input 
-                    type="checkbox" 
-                    className="peer sr-only"
-                    checked={hasInstagram}
-                    onChange={(e) => setHasInstagram(e.target.checked)}
-                  />
-                  <div className="w-11 h-6 bg-surface-hover border border-border-color peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+              <div className="flex gap-4">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-orange-500/20">
+                  <ImageIcon className="w-6 h-6 text-white" />
                 </div>
-                <span className="text-sm font-medium text-foreground">Instagram sahifani ulash</span>
-              </label>
-              
-              {hasInstagram && (
-                <div className="mt-4 animate-in fade-in slide-in-from-top-2">
-                  <input type="url" placeholder="https://instagram.com/..." className="w-full px-4 py-2.5 bg-background border border-border-color text-foreground rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500" />
+                <div>
+                  <h4 className="font-bold text-foreground">Profil dizaynini sozlash</h4>
+                  <p className="text-sm text-muted-foreground mt-1 max-w-[90%]">
+                    PRO tarifida profil ranglari va foni dizaynini o'zgartirish imkoniyati mavjud. O'z profilingizni ajratib ko'rsating!
+                  </p>
+                  <button className="mt-3 text-sm font-semibold text-amber-500 group-hover:text-amber-600 transition-colors flex items-center gap-1">
+                    Tarifni yangilash <span className="text-lg leading-none">&rarr;</span>
+                  </button>
                 </div>
-              )}
+              </div>
             </div>
           </div>
         )}

@@ -77,6 +77,19 @@ export const dictionary = {
       placeholder: "Muammoingizni yozing (masalan: jo'mrak oqyapti)...",
       contactBtn: "Bog'lanish",
       profileBtn: "Profil"
+    },
+    dashboard: {
+      title: "Boshqaruv Paneli",
+      ordersTitle: "Mijozlar buyurtmalari",
+      ordersTab: "Buyurtmalar",
+      profileTab: "Profil",
+      portfolioTab: "Portfolio",
+      accept: "Qabul qilish",
+      planActive: "Tarif: Faol (12 kun qoldi)",
+      statusNew: "YANGI",
+      statusInProgress: "JARAYONDA",
+      statusCompleted: "YAKUNLANGAN",
+      logout: "Chiqish"
     }
   },
   RU: {
@@ -155,6 +168,19 @@ export const dictionary = {
       placeholder: "Опишите проблему (например: течет кран)...",
       contactBtn: "Связаться",
       profileBtn: "Профиль"
+    },
+    dashboard: {
+      title: "Панель управления",
+      ordersTitle: "Заказы клиентов",
+      ordersTab: "Заказы",
+      profileTab: "Профиль",
+      portfolioTab: "Портфолио",
+      accept: "Принять",
+      planActive: "Тариф: Активен (осталось 12 дней)",
+      statusNew: "НОВЫЙ",
+      statusInProgress: "В ПРОЦЕССЕ",
+      statusCompleted: "ЗАВЕРШЕН",
+      logout: "Выйти"
     }
   },
   EN: {
@@ -233,6 +259,19 @@ export const dictionary = {
       placeholder: "Describe your problem (e.g. leaking faucet)...",
       contactBtn: "Contact",
       profileBtn: "Profile"
+    },
+    dashboard: {
+      title: "Dashboard",
+      ordersTitle: "Customer Orders",
+      ordersTab: "Orders",
+      profileTab: "Profile",
+      portfolioTab: "Portfolio",
+      accept: "Accept",
+      planActive: "Plan: Active (12 days left)",
+      statusNew: "NEW",
+      statusInProgress: "IN PROGRESS",
+      statusCompleted: "COMPLETED",
+      logout: "Logout"
     }
   }
 };
