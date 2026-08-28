@@ -16,8 +16,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "UstaGo - Eng yaxshi ustalar",
-  description: "O'zbekistondagi #1 Usta topish platformasi",
+  title: "UstaGo — Eng yaxshi ustalar",
+  description: "O'zbekiston bo'ylab eng yaxshi va ishonchli ustalar platformasi",
+  icons: {
+    icon: [
+      { url: '/icon.png', type: 'image/png' },
+      { url: '/favicon.ico' }
+    ],
+    apple: '/icon.png',
+  },
 };
 
 export default function RootLayout({
