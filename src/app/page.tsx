@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Search, Star, ShieldCheck, MapPin, MessageSquare, Wrench, ChevronRight, Zap, BadgeCheck } from "lucide-react";
+import { Search, Star, ShieldCheck, MapPin, MessageSquare, Wrench, ChevronRight, Zap, BadgeCheck, CreditCard, FileText, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
@@ -10,12 +10,14 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 
 import { useState, useEffect } from "react";
 import ProPricingModal from "@/components/modals/ProPricingModal";
+import TermsModal from "@/components/modals/TermsModal";
 
 export default function Home() {
   const { t } = useLanguage();
   const [featuredMasters, setFeaturedMasters] = useState<any[]>([]);
   const [currentMaster, setCurrentMaster] = useState<any>(null);
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
 
   useEffect(() => {
     const loadMasters = () => {
@@ -295,12 +297,95 @@ export default function Home() {
         </div>
       </section>
 
+      {/* 6. Foydalanish Qoidalari va Xavfsiz To'lov Kafolati */}
+      <section className="px-4 md:px-8 max-w-7xl mx-auto w-full mb-12">
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-stone-800/50 text-stone-300 text-xs font-bold uppercase tracking-wider mb-4 border border-stone-700">
+            <ShieldCheck className="w-3.5 h-3.5" /> Xavfsizlik va Shaffoflik
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            Foydalanish Qoidalari va To'lov Tartibi
+          </h2>
+          <p className="text-stone-400">
+            UstaGo platformasida xizmatlardan foydalanish, to'lovlarni amalga oshirish va kafolat shartlari bilan tanishing.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* 1-Karta */}
+          <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 md:p-8 flex flex-col shadow-lg">
+            <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
+              <CreditCard className="w-6 h-6 text-orange-500" />
+              To'lov va PRO Xizmatini Faollashtirish Tartibi
+            </h3>
+            <ul className="space-y-5 text-stone-300 flex-1">
+              <li className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-stone-800 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">1</div>
+                <p className="text-sm">Kerakli PRO tarifni tanlang va to'lov rekvizitlarini oling.</p>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-stone-800 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">2</div>
+                <p className="text-sm">To'lovni amalga oshirgach, chek ma'lumotlarini rasmiy botimizga (@UstaGoAdmin_bot) yuboring.</p>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-stone-800 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">3</div>
+                <p className="text-sm">Arizangiz administrator tomonidan tekshirilib, PRO profilingiz 5–15 daqiqa ichida faollashtiriladi.</p>
+              </li>
+            </ul>
+          </div>
+
+          {/* 2-Karta */}
+          <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 md:p-8 flex flex-col shadow-lg">
+            <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
+              <FileText className="w-6 h-6 text-orange-500" />
+              Ommaviy Oferta va Shartlar (Qoidalar)
+            </h3>
+            <ul className="space-y-4 text-stone-300 flex-1">
+              <li className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-stone-500 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold text-white text-sm">Xizmat sharti:</span>
+                  <p className="text-sm text-stone-400 mt-1">PRO tarif ustaning platforma katalogidagi ko'rinishini oshirish va qo'shimcha imkoniyatlar berish uchun xizmat qiladi.</p>
+                </div>
+              </li>
+              <li className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-stone-500 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold text-white text-sm">Mablag' qaytarilishi:</span>
+                  <p className="text-sm text-stone-400 mt-1">PRO xizmati darhol taqdim etilishi sababli, faollashtirilgan davr uchun to'langan mablag' qaytarib berilmaydi.</p>
+                </div>
+              </li>
+              <li className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-stone-500 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold text-white text-sm">Javobgarlik:</span>
+                  <p className="text-sm text-stone-400 mt-1">Mijoz va Usta o'rtasidagi bajarilgan ishlar sifati uchun tomonlar o'zaro kelishuv asosida javobgardir.</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+        
+        <div className="mt-8 text-center">
+          <button 
+            onClick={() => setIsTermsModalOpen(true)}
+            className="text-orange-500 hover:text-orange-400 text-sm font-bold flex items-center justify-center gap-2 mx-auto transition-colors"
+          >
+            To'liq Ommaviy Oferta matnini o'qish ↗
+          </button>
+        </div>
+      </section>
+
       {isPricingModalOpen && currentMaster && (
         <ProPricingModal 
           onClose={() => setIsPricingModalOpen(false)} 
           onSuccess={handlePurchaseSuccess} 
           masterData={currentMaster} 
         />
+      )}
+
+      {isTermsModalOpen && (
+        <TermsModal onClose={() => setIsTermsModalOpen(false)} />
       )}
     </div>
   );
