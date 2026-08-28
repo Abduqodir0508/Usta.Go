@@ -59,7 +59,7 @@ export default function Home() {
             {t.hero.badge}
           </div>
           
-          <h1 className="text-4xl md:text-6xl font-extrabold text-foreground tracking-tight leading-[1.1] animate-in slide-in-from-bottom-8 fade-in duration-700 delay-100">
+          <h1 className="text-2xl font-bold md:text-6xl md:font-extrabold text-foreground tracking-tight leading-[1.1] animate-in slide-in-from-bottom-8 fade-in duration-700 delay-100">
             {t.hero.title.split('—')[0]} <br className="hidden md:block"/>
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-600">
               — {t.hero.title.split('—')[1]}
@@ -134,14 +134,14 @@ export default function Home() {
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-sm font-bold">
                 <Zap className="w-4 h-4" /> AI Powered
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+              <h2 className="text-2xl md:text-4xl font-bold text-foreground">
                 {t.aiShowcase.title}
               </h2>
-              <ul className="space-y-6">
+              <ul className="space-y-4 md:space-y-6">
                 {[t.aiShowcase.feature1, t.aiShowcase.feature2, t.aiShowcase.feature3].map((feature, i) => (
-                  <li key={i} className="flex items-center gap-4 text-lg text-stone-800 dark:text-slate-300">
-                    <div className="w-10 h-10 rounded-xl bg-surface flex items-center justify-center border border-border-color shadow-sm flex-shrink-0">
-                      <BadgeCheck className="w-5 h-5 text-amber-500" />
+                  <li key={i} className="flex items-center gap-3 md:gap-4 text-xs sm:text-sm text-gray-200 md:text-lg md:text-slate-300">
+                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-surface flex items-center justify-center border border-border-color shadow-sm flex-shrink-0">
+                      <BadgeCheck className="w-4 h-4 md:w-5 md:h-5 text-amber-500" />
                     </div>
                     {feature}
                   </li>
@@ -153,16 +153,16 @@ export default function Home() {
             <div className="bg-surface border border-border-color rounded-2xl shadow-2xl p-4 space-y-4 z-10">
               {/* User Message */}
               <div className="flex justify-end">
-                <div className="bg-slate-100 dark:bg-slate-800 text-foreground p-4 rounded-2xl rounded-tr-sm max-w-[85%] text-sm">
+                <div className="bg-[#1e293b] text-white p-3 md:p-4 rounded-2xl rounded-tr-sm max-w-[85%] text-xs md:text-sm shadow-sm">
                   {t.aiShowcase.userMessage}
                 </div>
               </div>
               {/* AI Response */}
-              <div className="flex gap-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center flex-shrink-0">
-                  <span className="text-white text-xs font-bold">AI</span>
+              <div className="flex gap-2 md:gap-3">
+                <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center flex-shrink-0 mt-0.5 md:mt-0">
+                  <span className="text-white text-[10px] md:text-xs font-bold">AI</span>
                 </div>
-                <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 text-foreground p-4 rounded-2xl rounded-tl-sm text-sm whitespace-pre-line leading-relaxed">
+                <div className="bg-[#1f1f1f] border border-[#2a2a2a] md:border-amber-500/20 text-gray-200 p-3 md:p-4 rounded-2xl rounded-tl-sm text-xs md:text-sm whitespace-pre-line leading-relaxed shadow-sm">
                   {t.aiShowcase.aiMessage}
                 </div>
               </div>
@@ -181,15 +181,15 @@ export default function Home() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-6 md:pb-0 md:grid md:grid-cols-3 md:gap-6 md:overflow-visible">
           {featuredMasters.map((master) => (
             <Link
               key={master.id}
               href={`/usta/${master.id}`}
-              className="glass p-6 rounded-3xl hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group"
+              className="min-w-[280px] md:min-w-0 snap-center glass p-5 md:p-6 rounded-3xl hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group"
             >
-              <div className="flex gap-4 items-start">
-                <div className="relative w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0 shadow-sm">
+              <div className="flex gap-3 md:gap-4 items-start">
+                <div className="relative w-14 h-14 md:w-16 md:h-16 rounded-2xl overflow-hidden flex-shrink-0 shadow-sm">
                   <Image src={master.image} alt={master.name} fill className="object-cover" />
                 </div>
                 <div>

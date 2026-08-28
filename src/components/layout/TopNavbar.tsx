@@ -78,16 +78,16 @@ export function TopNavbar() {
     <>
       <header className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-        isScrolled ? "glass shadow-sm py-3" : "bg-transparent py-5"
+        isScrolled ? "glass shadow-sm py-2.5 md:py-3" : "bg-transparent py-2.5 md:py-5"
       )}>
-        <div className="max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-3 md:px-8 flex items-center justify-between gap-1.5 md:gap-0">
           
           {/* Brand */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center shadow-lg group-hover:shadow-orange-500/20 transition-all">
-              <Wrench className="w-5 h-5 text-white" />
+          <Link href="/" className="flex items-center gap-1.5 md:gap-2 group">
+            <div className="w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center shadow-lg group-hover:shadow-orange-500/20 transition-all">
+              <Wrench className="w-4 h-4 md:w-5 md:h-5 text-white" />
             </div>
-            <span className="text-xl font-bold tracking-tight text-foreground">
+            <span className="text-lg md:text-xl font-bold tracking-tight text-foreground">
               UstaGo
             </span>
           </Link>
@@ -106,10 +106,33 @@ export function TopNavbar() {
           </nav>
 
           {/* Right Controls */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
+
+            {/* Mobile AI Button */}
+            <button 
+              onClick={() => setIsAiOpen(true)}
+              className="md:hidden flex w-8 h-8 rounded-full bg-[#1c1c1e] text-[#ff6b00] items-center justify-center text-[11px] font-extrabold"
+            >
+              AI
+            </button>
+
+            {/* Mobile Language Switcher */}
+            <div className="md:hidden flex items-center">
+              <select 
+                className="rounded-full bg-[#1c1c1e] text-gray-200 text-xs px-2 py-1.5 outline-none appearance-none font-medium cursor-pointer"
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as Language)}
+              >
+                {LANGUAGES.map(lang => (
+                  <option key={lang} value={lang}>
+                    {lang === "UZ" ? "🇺🇿 UZ" : lang === "RU" ? "🇷🇺 RU" : "🇬🇧 EN"}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             {/* Language Switcher */}
-            <div className="hidden sm:flex items-center gap-1 border border-border-color rounded-full p-1 bg-surface">
+            <div className="hidden md:flex items-center gap-1 border border-border-color rounded-full p-1 bg-surface">
               {LANGUAGES.map((lang) => (
                 <button
                   key={lang}
@@ -126,7 +149,7 @@ export function TopNavbar() {
               ))}
             </div>
 
-            <div className="h-5 w-px bg-border-color mx-1 hidden sm:block"></div>
+            <div className="h-5 w-px bg-border-color mx-1 hidden md:block"></div>
 
             {/* Auth/CTAs */}
             {mounted && session ? (
@@ -177,15 +200,22 @@ export function TopNavbar() {
               <>
                 <button 
                   onClick={() => setIsAuthOpen(true)}
-                  className="hidden sm:block text-sm font-semibold text-foreground opacity-80 hover:opacity-100 transition-opacity"
+                  className="hidden md:block text-sm font-semibold text-foreground opacity-80 hover:opacity-100 transition-opacity"
                 >
                   {t.navbar.login}
                 </button>
                 <button 
                   onClick={() => setIsAuthOpen(true)}
-                  className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white px-5 py-2.5 rounded-full text-sm font-semibold shadow-lg shadow-orange-500/20 transition-all hover:scale-105 active:scale-95"
+                  className="hidden md:block bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white px-5 py-2.5 rounded-full text-sm font-semibold shadow-lg shadow-orange-500/20 transition-all hover:scale-105 active:scale-95"
                 >
                   {t.navbar.joinAsMaster}
+                </button>
+                {/* Mobile Login Button */}
+                <button 
+                  onClick={() => setIsAuthOpen(true)}
+                  className="md:hidden bg-[#ff6b00] text-xs px-3 py-1.5 rounded-full text-white font-semibold flex items-center justify-center whitespace-nowrap"
+                >
+                  Kirish
                 </button>
               </>
             )}
