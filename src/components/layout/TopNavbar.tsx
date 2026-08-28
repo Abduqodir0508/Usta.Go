@@ -100,7 +100,7 @@ export function TopNavbar() {
             <Link href="/katalog" className="text-sm font-medium text-foreground opacity-70 hover:opacity-100 transition-opacity">
               {t.navbar.directory}
             </Link>
-            <Link href="/#faq" className="text-sm font-medium text-foreground opacity-70 hover:opacity-100 transition-opacity">
+            <Link href="/qanday-ishlaydi" className="text-sm font-medium text-foreground opacity-70 hover:opacity-100 transition-opacity">
               {t.navbar.faq}
             </Link>
           </nav>

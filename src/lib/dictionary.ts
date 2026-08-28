@@ -6,7 +6,7 @@ export const dictionary = {
       features: "Imkoniyatlar",
       aiAssistant: "AI Maslahatchi",
       directory: "Ustalar katalogi",
-      faq: "FAQ",
+      faq: "Qanday ishlaydi",
       login: "Kirish",
       joinAsMaster: "Usta sifatida qo'shilish"
     },
@@ -98,9 +98,25 @@ export const dictionary = {
       editNoticeTitle: "Ma'lumotlarni o'zgartirish",
       editNoticeDesc: "Ma'lumotlarni o'zgartirish uchun adminga murojaat qiling",
       editNoticeBtn: "Adminga yozish",
-      proTeaserTitle: "Profil dizaynini sozlash",
       proTeaserDesc: "PRO tarifida profil ranglari va foni dizaynini o'zgartirish imkoniyati mavjud. O'z profilingizni ajratib ko'rsating!",
       proTeaserBtn: "Tarifni yangilash →"
+    },
+    howPage: {
+      title: "UstaGo qanday ishlaydi?",
+      subtitle: "UstaGo — mijozlar va ustalar uchun eng qulay va zamonaviy platforma.",
+      clientTitle: "Mijozlar uchun qo'llanma",
+      clientStep1Title: "Tizimga kirish",
+      clientStep1Desc: "Telefon raqamingiz yoki ijtimoiy tarmoqlar orqali bir zumda ro'yxatdan o'ting.",
+      clientStep2Title: "Usta qidirish",
+      clientStep2Desc: "Katalogdan kerakli mutaxassisni tanlang yoki muammoni yozib AI maslahatchidan yordam so'rang.",
+      clientStep3Title: "Buyurtma berish",
+      clientStep3Desc: "Usta bilan tanishib, to'g'ridan-to'g'ri bog'laning va xizmatga buyurtma bering.",
+      masterTitle: "Ustalar uchun",
+      masterDesc: "Usta sifatida platformaga qo'shilish va shaxsiy kabinet ochish faqat Admin orqali amalga oshiriladi.",
+      masterPrice: "Akkaunt ochish narxi: 40 000 so'm (Chegirmada)",
+      masterBtn: "Adminga yozish / Akkaunt ochish",
+      aiTitle: "⚡ AI Powered",
+      aiDesc: "Sun'iy intellekt (AI) tizimimiz muammoingizni chuqur tahlil qiladi va hududingizdagi eng mos mutaxassislarni 1 daqiqa ichida topib beradi. Vaqtingizni tejang va ishonchli usta toping!"
     }
   },
   RU: {
@@ -108,7 +124,7 @@ export const dictionary = {
       features: "Возможности",
       aiAssistant: "AI Помощник",
       directory: "Каталог мастеров",
-      faq: "FAQ",
+      faq: "Как это работает",
       login: "Войти",
       joinAsMaster: "Стать мастером"
     },
@@ -200,9 +216,25 @@ export const dictionary = {
       editNoticeTitle: "Редактирование данных",
       editNoticeDesc: "Для изменения информации обратитесь к администратору",
       editNoticeBtn: "Связаться с админом",
-      proTeaserTitle: "Настройка дизайна профиля",
       proTeaserDesc: "На тарифе PRO доступно изменение цвета и фона профиля. Сделайте ваш профиль уникальным!",
       proTeaserBtn: "Обновить тариф →"
+    },
+    howPage: {
+      title: "Как работает UstaGo?",
+      subtitle: "UstaGo — самая удобная и современная платформа для клиентов и мастеров.",
+      clientTitle: "Руководство для клиентов",
+      clientStep1Title: "Авторизация",
+      clientStep1Desc: "Зарегистрируйтесь мгновенно через номер телефона или соцсети.",
+      clientStep2Title: "Поиск мастера",
+      clientStep2Desc: "Выберите нужного специалиста из каталога или попросите AI помощника найти его для вас.",
+      clientStep3Title: "Оформление заказа",
+      clientStep3Desc: "Ознакомьтесь с профилем мастера, свяжитесь напрямую и оформите заказ.",
+      masterTitle: "Для мастеров",
+      masterDesc: "Регистрация в качестве мастера и открытие личного кабинета осуществляется только через Администратора.",
+      masterPrice: "Стоимость открытия аккаунта: 40 000 сум (По скидке)",
+      masterBtn: "Написать админу / Открыть аккаунт",
+      aiTitle: "⚡ AI Powered",
+      aiDesc: "Наша система искусственного интеллекта (AI) глубоко анализирует вашу проблему и находит наиболее подходящих специалистов в вашем районе за 1 минуту. Экономьте время и находите надежных мастеров!"
     }
   },
   EN: {
@@ -210,7 +242,7 @@ export const dictionary = {
       features: "Features",
       aiAssistant: "AI Assistant",
       directory: "Masters Directory",
-      faq: "FAQ",
+      faq: "How it works",
       login: "Sign in",
       joinAsMaster: "Join as Master"
     },
@@ -302,9 +334,25 @@ export const dictionary = {
       editNoticeTitle: "Edit Information",
       editNoticeDesc: "To change profile details, contact the administrator",
       editNoticeBtn: "Contact Admin",
-      proTeaserTitle: "Customize Profile Design",
       proTeaserDesc: "Change background themes and colors with PRO plan. Stand out from the crowd!",
       proTeaserBtn: "Upgrade Plan →"
+    },
+    howPage: {
+      title: "How UstaGo works?",
+      subtitle: "UstaGo — the most convenient and modern platform for clients and masters.",
+      clientTitle: "Guide for Clients",
+      clientStep1Title: "Sign In",
+      clientStep1Desc: "Register instantly via your phone number or social networks.",
+      clientStep2Title: "Find a Master",
+      clientStep2Desc: "Select a specialist from the directory or ask the AI assistant to find one for you.",
+      clientStep3Title: "Place an Order",
+      clientStep3Desc: "Check out the master's profile, contact them directly and order the service.",
+      masterTitle: "For Masters",
+      masterDesc: "Joining as a master and opening an account is only possible through the Administrator.",
+      masterPrice: "Account opening price: 40,000 UZS (Discounted)",
+      masterBtn: "Contact Admin / Open Account",
+      aiTitle: "⚡ AI Powered",
+      aiDesc: "Our Artificial Intelligence (AI) system deeply analyzes your problem and finds the most suitable specialists in your area within 1 minute. Save time and find reliable craftsmen!"
     }
   }
 };

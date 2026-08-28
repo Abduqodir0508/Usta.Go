@@ -75,10 +75,10 @@ export default function Home() {
               <Search className="w-5 h-5" />
               {t.hero.findMaster}
             </button>
-            <button className="w-full sm:w-auto px-8 py-4 glass text-foreground rounded-full font-bold text-lg hover:bg-surface-hover transition-all flex items-center justify-center gap-2">
+            <Link href="/qanday-ishlaydi" className="w-full sm:w-auto px-8 py-4 glass text-foreground rounded-full font-bold text-lg hover:bg-surface-hover transition-all flex items-center justify-center gap-2">
               {t.hero.howItWorks}
               <ChevronRight className="w-5 h-5" />
-            </button>
+            </Link>
           </div>
         </div>
       </section>
