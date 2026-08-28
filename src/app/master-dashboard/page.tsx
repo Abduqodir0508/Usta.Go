@@ -83,21 +83,22 @@ export default function Dashboard() {
     const file = e.target.files[0];
     
     try {
-      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'png';
-      const cleanFileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
-      const filePath = `avatars/${cleanFileName}`;
+      const fileName = `avatars/${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
 
-      const { error: uploadError } = await supabase.storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from('ustago-media')
-        .upload(filePath, file);
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
 
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage
         .from('ustago-media')
-        .getPublicUrl(filePath);
+        .getPublicUrl(fileName);
 
-      const updatedMaster = { ...currentMaster, avatar_url: publicUrl };
+      const updatedMaster = { ...currentMaster, avatar_url: publicUrl, image: publicUrl };
       setCurrentMaster(updatedMaster);
       localStorage.setItem("usta_current_master", JSON.stringify(updatedMaster));
       
@@ -107,8 +108,8 @@ export default function Dashboard() {
       
       window.dispatchEvent(new Event("storage"));
       
-    } catch (error) {
-      console.error('Error uploading avatar:', error);
+    } catch (error: any) {
+      console.error("Storage upload error:", error);
       alert('Avatar yuklashda xatolik yuz berdi!');
     }
   };

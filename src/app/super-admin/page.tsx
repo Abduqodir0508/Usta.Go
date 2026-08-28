@@ -64,24 +64,25 @@ export default function SuperAdminPage() {
 
     try {
       if (avatarFile) {
-        const fileExt = avatarFile.name.split('.').pop()?.toLowerCase() || 'png';
-        const cleanFileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
-        const filePath = `avatars/${cleanFileName}`;
+        const fileName = `avatars/${Date.now()}_${avatarFile.name.replace(/\s+/g, '_')}`;
 
-        const { error: uploadError } = await supabase.storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
           .from('ustago-media')
-          .upload(filePath, avatarFile);
+          .upload(fileName, avatarFile, {
+            cacheControl: '3600',
+            upsert: true
+          });
 
         if (uploadError) throw uploadError;
 
         const { data: { publicUrl } } = supabase.storage
           .from('ustago-media')
-          .getPublicUrl(filePath);
+          .getPublicUrl(fileName);
 
         avatarUrl = publicUrl;
       }
-    } catch (error) {
-      console.error('Error uploading image:', error);
+    } catch (error: any) {
+      console.error("Storage upload error:", error);
       alert('Rasm yuklashda xatolik yuz berdi!');
       setIsUploading(false);
       return;
