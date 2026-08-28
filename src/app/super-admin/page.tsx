@@ -16,6 +16,9 @@ export default function SuperAdminPage() {
   const [mastersList, setMastersList] = useState<any[]>([]);
   const [toastMessage, setToastMessage] = useState("");
 
+  const [editingMaster, setEditingMaster] = useState<any>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
   // Form State
   const [formData, setFormData] = useState({
     name: "", category: "", phone: "", telegram: "", address: "", price: "", login: "", password: ""
@@ -118,6 +121,38 @@ export default function SuperAdminPage() {
     }
   };
 
+  const handleEditClick = (master: any) => {
+    setEditingMaster({ ...master }); // Eski ma'lumotlarni to'liq nusxalash
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMaster || !editingMaster.id) {
+      console.error("PUT Xatolik: Ustaning ID'si topilmadi (undefined)");
+      return;
+    }
+
+    try {
+      // 1. Bazani yangilash (Bu yerda localStorage ishlatilyapti)
+      const updatedList = mastersList.map(m => m.id === editingMaster.id ? editingMaster : m);
+      
+      // 2. State va LocalStorage ni re-fetch / update qilish
+      setMastersList(updatedList);
+      localStorage.setItem("usta_masters", JSON.stringify(updatedList));
+      window.dispatchEvent(new Event("storage"));
+
+      // 3. UI modalni yopish va Toas xabar chiqarish
+      setIsEditModalOpen(false);
+      setEditingMaster(null);
+      setToastMessage("Ma'lumotlar muvaffaqiyatli yangilandi!");
+      setTimeout(() => setToastMessage(""), 2000);
+    } catch (error) {
+      console.error("Super Admin Edit (PUT) xatoligi:", error);
+      alert("Ma'lumotlarni yangilashda xatolik yuz berdi!");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background pt-24 pb-12 relative">
       {/* Toast */}
@@ -217,7 +252,7 @@ export default function SuperAdminPage() {
                           </span>
                         </td>
                         <td className="py-4 flex justify-end gap-2">
-                          <button className="p-2 bg-[#231F1C] hover:bg-stone-800 rounded-lg text-stone-400 hover:text-white transition-colors">
+                          <button onClick={() => handleEditClick(master)} className="p-2 bg-[#231F1C] hover:bg-stone-800 rounded-lg text-stone-400 hover:text-white transition-colors">
                             <Edit2 className="w-4 h-4" />
                           </button>
                           <button onClick={() => handleDeleteMaster(master.id)} className="p-2 bg-red-950/20 hover:bg-red-900/40 rounded-lg text-red-500 transition-colors">
@@ -334,6 +369,66 @@ export default function SuperAdminPage() {
 
         </div>
       </div>
+
+      {/* Tahrirlash (Edit) Modali */}
+      {isEditModalOpen && editingMaster && (
+        <div className="fixed inset-0 z-[100] bg-black/70 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-[#1A1614] border border-stone-800 rounded-3xl w-full max-w-2xl p-6 shadow-2xl relative overflow-y-auto max-h-[90vh]">
+            <h2 className="text-2xl font-bold text-white mb-6">Usta ma'lumotlarini tahrirlash</h2>
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-stone-400 mb-1.5">To'liq ism *</label>
+                  <input type="text" name="name" required value={editingMaster.name || ''} onChange={e => setEditingMaster({ ...editingMaster, name: e.target.value })} className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-400 mb-1.5">Kategoriya *</label>
+                  <select required name="category" value={editingMaster.category || ''} onChange={e => setEditingMaster({ ...editingMaster, category: e.target.value })} className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500 appearance-none">
+                    <option value="santexnik">Santexnik</option>
+                    <option value="elektrik">Elektrik</option>
+                    <option value="mebelchi">Mebel ustasi</option>
+                    <option value="remont">Remont va pardozlash</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-400 mb-1.5">Telefon raqam *</label>
+                  <input type="tel" name="phone" required value={editingMaster.phone || ''} onChange={e => setEditingMaster({ ...editingMaster, phone: e.target.value })} className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-400 mb-1.5">Telegram Username</label>
+                  <input type="text" name="telegram" value={editingMaster.telegram || ''} onChange={e => setEditingMaster({ ...editingMaster, telegram: e.target.value })} className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-400 mb-1.5">Manzil / Tuman</label>
+                  <input type="text" name="address" value={editingMaster.address || ''} onChange={e => setEditingMaster({ ...editingMaster, address: e.target.value })} className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-400 mb-1.5">Boshlang'ich narx</label>
+                  <input type="number" name="price" value={editingMaster.price || ''} onChange={e => setEditingMaster({ ...editingMaster, price: e.target.value })} className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-400 mb-1.5">Login *</label>
+                  <input type="text" name="login" required value={editingMaster.login || ''} onChange={e => setEditingMaster({ ...editingMaster, login: e.target.value })} className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-400 mb-1.5">Parol *</label>
+                  <input type="text" name="password" required value={editingMaster.password || ''} onChange={e => setEditingMaster({ ...editingMaster, password: e.target.value })} className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" />
+                </div>
+              </div>
+              
+              <div className="pt-6 mt-6 border-t border-stone-800 flex justify-end gap-3">
+                <button type="button" onClick={() => { setIsEditModalOpen(false); setEditingMaster(null); }} className="px-6 py-3 rounded-xl font-bold text-stone-400 hover:text-white bg-[#231F1C] hover:bg-stone-800 transition-colors">
+                  Bekor qilish
+                </button>
+                <button type="submit" className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-lg shadow-orange-500/25">
+                  Saqlash (PUT)
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
