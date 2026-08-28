@@ -13,16 +13,11 @@ interface AiModalProps {
   onClose: () => void;
 }
 
-const MOCK_AI_RESPONSE = {
-  masters: [
-    { id: "1", name: "Alisher Usta", rating: 4.9, time: "15 daq", price: 50000, image: "https://i.pravatar.cc/150?u=alisher" },
-    { id: "4", name: "Dilshod Santexnik", rating: 4.7, time: "30 daq", price: 40000, image: "https://i.pravatar.cc/150?u=dilshod" }
-  ]
-};
+import { supabase } from "@/lib/supabase";
 
 export function AiModal({ isOpen, onClose }: AiModalProps) {
   const { t } = useLanguage();
-  const [messages, setMessages] = useState<{role: 'user' | 'ai', content: string, masters?: typeof MOCK_AI_RESPONSE.masters}[]>([
+  const [messages, setMessages] = useState<{role: 'user' | 'ai', content: string, masters?: any[]}[]>([
     { role: 'ai', content: t.aiChat.greeting }
   ]);
   const [input, setInput] = useState("");
@@ -44,7 +39,7 @@ export function AiModal({ isOpen, onClose }: AiModalProps) {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim()) return;
     
     const userMsg = input.trim();
@@ -52,15 +47,62 @@ export function AiModal({ isOpen, onClose }: AiModalProps) {
     setInput("");
     setIsTyping(true);
 
-    // Simulate AI thinking and responding with mock data
-    setTimeout(() => {
+    try {
+      const queryLower = userMsg.toLowerCase();
+      let categoryFilter = "";
+      if (queryLower.includes("mebel") || queryLower.includes("shkaf") || queryLower.includes("stol") || queryLower.includes("krovat") || queryLower.includes("stul")) {
+        categoryFilter = "mebel";
+      } else if (queryLower.includes("santexnik") || queryLower.includes("jo'mrak") || queryLower.includes("jomrak") || queryLower.includes("truba") || queryLower.includes("kran") || queryLower.includes("unitaz") || queryLower.includes("vanna")) {
+        categoryFilter = "santexnik";
+      } else if (queryLower.includes("elektr") || queryLower.includes("rozetka") || queryLower.includes("sim") || queryLower.includes("lampa") || queryLower.includes("luyustra") || queryLower.includes("shit")) {
+        categoryFilter = "elektr";
+      } else if (queryLower.includes("remont") || queryLower.includes("bo'yoq") || queryLower.includes("pobelka") || queryLower.includes("oboy") || queryLower.includes("kafel") || queryLower.includes("plitka")) {
+        categoryFilter = "remont";
+      }
+
+      let queryBuilder = supabase.from('ustalar').select('*').eq('is_banned', false);
+
+      if (categoryFilter) {
+        queryBuilder = queryBuilder.ilike('category', `%${categoryFilter}%`);
+      } else {
+        queryBuilder = queryBuilder.or(`name.ilike.%${userMsg}%,category.ilike.%${userMsg}%,address.ilike.%${userMsg}%`);
+      }
+
+      const { data: foundMasters, error } = await queryBuilder.order('is_pro', { ascending: false }).limit(4);
+
+      setIsTyping(false);
+
+      if (foundMasters && foundMasters.length > 0) {
+        const formatted = foundMasters.map((m: any) => ({
+          id: m.id.toString(),
+          name: m.name,
+          category: m.category,
+          rating: m.rating || 5.0,
+          price: m.price ? parseInt(m.price) : 50000,
+          image: m.avatar_url || null,
+          phone: m.phone,
+          is_pro: m.is_pro
+        }));
+
+        setMessages(prev => [...prev, { 
+          role: 'ai', 
+          content: `${t.aiShowcase?.aiMessage || "Sizning so'rovingizga mos eng yaxshi ustalarni topdim:"}`,
+          masters: formatted
+        }]);
+      } else {
+        setMessages(prev => [...prev, { 
+          role: 'ai', 
+          content: "Kechirasiz, ushbu yo'nalish bo'yicha hozircha ustalar topilmadi. Katalogimizni ko'rib chiqishingiz mumkin."
+        }]);
+      }
+    } catch (err) {
+      console.error("AI Search Error:", err);
       setIsTyping(false);
       setMessages(prev => [...prev, { 
         role: 'ai', 
-        content: t.aiShowcase.aiMessage,
-        masters: MOCK_AI_RESPONSE.masters
+        content: "Qidirishda xatolik yuz berdi. Iltimos qayta urinib ko'ring."
       }]);
-    }, 1500);
+    }
   };
 
   return (
@@ -123,21 +165,28 @@ export function AiModal({ isOpen, onClose }: AiModalProps) {
                         <div className="mt-4 space-y-3">
                           {msg.masters.map(master => (
                             <div key={master.id} className="bg-surface border border-border-color rounded-xl p-3 flex gap-3 items-center">
-                              <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
-                                <Image src={master.image} alt={master.name} fill className="object-cover" />
+                              <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+                                {master.image ? (
+                                  <img src={master.image} alt={master.name} className="w-full h-full object-cover" />
+                                ) : (
+                                  <span className="font-bold text-amber-500 text-lg">{master.name.charAt(0).toUpperCase()}</span>
+                                )}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <h4 className="font-bold text-foreground text-sm truncate">{master.name}</h4>
-                                <p className="text-xs text-muted-foreground">⭐ {master.rating} • {master.time}</p>
+                                <h4 className="font-bold text-foreground text-sm truncate flex items-center gap-1">
+                                  {master.name}
+                                  {master.is_pro && <span className="text-[10px] bg-orange-500/20 text-orange-500 font-bold px-1.5 py-0.5 rounded">PRO</span>}
+                                </h4>
+                                <p className="text-xs text-muted-foreground">⭐ {master.rating} • {master.category}</p>
                                 <p className="text-amber-500 font-bold text-xs mt-0.5">{master.price.toLocaleString()} so'm</p>
                               </div>
-                              <div className="flex flex-col gap-2">
+                              <div className="flex flex-col gap-1.5">
                                 <Link href={`/usta/${master.id}`} onClick={onClose} className="px-3 py-1.5 text-[10px] font-bold bg-amber-500/10 text-amber-500 rounded-lg text-center hover:bg-amber-500/20 transition-colors">
-                                  {t.aiChat.profileBtn}
+                                  {t.aiChat?.profileBtn || "Profil"}
                                 </Link>
-                                <button className="px-3 py-1.5 text-[10px] font-bold bg-amber-500 text-white rounded-lg text-center shadow-md hover:bg-amber-600 transition-colors">
-                                  {t.aiChat.contactBtn}
-                                </button>
+                                <a href={`tel:${master.phone}`} className="px-3 py-1.5 text-[10px] font-bold bg-amber-500 text-white rounded-lg text-center shadow-md hover:bg-amber-600 transition-colors">
+                                  {t.aiChat?.contactBtn || "Bog'lanish"}
+                                </a>
                               </div>
                             </div>
                           ))}

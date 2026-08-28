@@ -85,20 +85,22 @@ export default function UstaProfile() {
         <div className="flex flex-col md:flex-row md:items-start gap-6">
           <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-border-color bg-surface flex-shrink-0 shadow-xl mx-auto md:mx-0 flex items-center justify-center">
             {master.image ? (
-              <Image
+              <img
                 src={master.image}
                 alt={master.name}
-                fill
-                className="object-cover"
+                className="w-full h-full object-cover"
               />
             ) : (
-              <span className="text-4xl font-bold text-amber-500">{master.name.charAt(0).toUpperCase()}</span>
+              <span className="text-4xl font-bold text-amber-500">{master.name ? master.name.charAt(0).toUpperCase() : "U"}</span>
             )}
           </div>
           
           <div className="flex-1 text-center md:text-left space-y-2">
             <div className="flex items-center justify-center md:justify-start gap-2">
               <h1 className="text-2xl md:text-3xl font-bold text-foreground">{master.name}</h1>
+              {master.is_pro && (
+                <span className="bg-orange-500/20 text-orange-500 text-xs font-bold px-2 py-0.5 rounded-full border border-orange-500/30">PRO</span>
+              )}
             </div>
             
             <p className="text-lg text-amber-500 font-medium">{master.category}</p>
@@ -106,15 +108,15 @@ export default function UstaProfile() {
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm text-muted-foreground pt-1">
               <div className="flex items-center gap-1 bg-surface px-3 py-1 rounded-full border border-border-color">
                 <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                <span className="font-bold text-foreground">{master.rating}</span>
-                <span>({master.reviews} ta sharh)</span>
+                <span className="font-bold text-foreground">{master.rating || 5.0}</span>
+                <span>({master.reviews || 0} ta sharh)</span>
               </div>
               <div className="flex items-center gap-1">
                 <MapPin className="w-4 h-4 text-amber-500/70" />
-                <span>{master.location}</span>
+                <span>{master.address || master.location || "Toshkent"}</span>
               </div>
               <div className="flex items-center gap-1">
-                <span className="font-medium text-foreground">Tajriba:</span> {master.experience}
+                <span className="font-medium text-foreground">Tajriba:</span> {master.experience || "1 yil+"}
               </div>
             </div>
           </div>
@@ -122,11 +124,23 @@ export default function UstaProfile() {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-3 mt-8">
-          <button className="flex-1 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white py-3.5 px-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-orange-500/20">
-            <MessageCircle className="w-5 h-5" />
-            Telegram orqali bog'lanish
-          </button>
-          <a href={`tel:${master.phone}`} className="flex-1 bg-surface-hover hover:bg-slate-200 dark:hover:bg-slate-800 border border-border-color text-foreground py-3.5 px-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-colors">
+          {(() => {
+            const rawTg = master.telegram || master.telegram_username || "";
+            const cleanTg = rawTg.replace(/^@/, "").trim();
+            const tgUrl = cleanTg ? `https://t.me/${cleanTg}` : "https://t.me/UstaGo_pro_bot";
+            return (
+              <a
+                href={tgUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white py-3.5 px-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-orange-500/20"
+              >
+                <MessageCircle className="w-5 h-5" />
+                Telegram orqali bog'lanish
+              </a>
+            );
+          })()}
+          <a href={`tel:${master.phone || master.phone_number || ''}`} className="flex-1 bg-surface-hover hover:bg-slate-200 dark:hover:bg-slate-800 border border-border-color text-foreground py-3.5 px-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-colors">
             <Phone className="w-5 h-5" />
             Qo'ng'iroq qilish
           </a>
