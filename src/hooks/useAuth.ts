@@ -76,7 +76,8 @@ export function useAuth() {
         (payload) => {
           console.log("Realtime status updated:", payload.new);
           setUser((prev) => {
-            const updated = { ...prev, ...payload.new };
+            if (!prev) return (payload.new as UserProfile) || null;
+            const updated: UserProfile = { ...prev, ...payload.new };
             localStorage.setItem("usta_current_master", JSON.stringify(updated));
             window.dispatchEvent(new Event("auth_changed"));
             return updated;
