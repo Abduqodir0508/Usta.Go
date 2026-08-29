@@ -32,11 +32,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="uz" className="dark" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}>
+    <html lang="uz" className="dark overflow-x-hidden w-full max-w-full" suppressHydrationWarning>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col overflow-x-hidden w-full max-w-full`}>
         <LanguageProvider>
           <TopNavbar />
-          <main className="flex-1 pt-20">
+          <main className="flex-1 pt-20 overflow-x-hidden w-full max-w-full">
             {children}
           </main>
           <Footer />

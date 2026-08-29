@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Star, ShieldCheck, MapPin, CheckCircle2, Phone, MessageCircle, ChevronLeft } from "lucide-react";
 import { useParams, notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { AvatarImage } from "@/components/ui/AvatarImage";
 
 export default function UstaProfile() {
   const params = useParams();
@@ -84,15 +85,12 @@ export default function UstaProfile() {
       <div className="p-4 md:p-8">
         <div className="flex flex-col md:flex-row md:items-start gap-6">
           <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-border-color bg-surface flex-shrink-0 shadow-xl mx-auto md:mx-0 flex items-center justify-center">
-            {master.image ? (
-              <img
-                src={master.image}
-                alt={master.name}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <span className="text-4xl font-bold text-amber-500">{master.name ? master.name.charAt(0).toUpperCase() : "U"}</span>
-            )}
+            <AvatarImage
+              src={master.image}
+              alt={master.name || "Usta"}
+              fill
+              className="object-cover"
+            />
           </div>
           
           <div className="flex-1 text-center md:text-left space-y-2">

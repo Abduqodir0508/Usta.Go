@@ -14,6 +14,7 @@ interface AiModalProps {
 }
 
 import { supabase } from "@/lib/supabase";
+import { AvatarImage } from "@/components/ui/AvatarImage";
 
 export function AiModal({ isOpen, onClose }: AiModalProps) {
   const { t } = useLanguage();
@@ -165,12 +166,8 @@ export function AiModal({ isOpen, onClose }: AiModalProps) {
                         <div className="mt-4 space-y-3">
                           {msg.masters.map(master => (
                             <div key={master.id} className="bg-surface border border-border-color rounded-xl p-3 flex gap-3 items-center">
-                              <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-                                {master.image ? (
-                                  <img src={master.image} alt={master.name} className="w-full h-full object-cover" />
-                                ) : (
-                                  <span className="font-bold text-amber-500 text-lg">{master.name.charAt(0).toUpperCase()}</span>
-                                )}
+                              <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+                                <AvatarImage src={master.image} alt={master.name} fill className="object-cover" />
                               </div>
                               <div className="flex-1 min-w-0">
                                 <h4 className="font-bold text-foreground text-sm truncate flex items-center gap-1">

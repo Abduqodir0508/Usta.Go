@@ -7,6 +7,7 @@ import { Search, Star, ShieldCheck, MapPin, Filter, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { supabase } from "@/lib/supabase";
+import { AvatarImage } from "@/components/ui/AvatarImage";
 
 export default function SearchPage() {
   const { t } = useLanguage();
@@ -141,7 +142,7 @@ export default function SearchPage() {
             >
               <div className="flex items-start gap-4">
                 <div className="relative w-16 h-16 rounded-full overflow-hidden bg-background flex-shrink-0 border border-border-color">
-                  <Image
+                  <AvatarImage
                     src={master.image}
                     alt={master.name}
                     fill

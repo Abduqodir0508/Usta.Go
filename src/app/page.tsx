@@ -12,6 +12,7 @@ import { useState, useEffect } from "react";
 import ProPricingModal from "@/components/modals/ProPricingModal";
 import TermsModal from "@/components/modals/TermsModal";
 import { supabase } from "@/lib/supabase";
+import { AvatarImage } from "@/components/ui/AvatarImage";
 
 export default function Home() {
   const { t } = useLanguage();
@@ -102,9 +103,9 @@ export default function Home() {
     <div className="flex flex-col gap-24 pb-24">
       
       {/* 1. Hero Section */}
-      <section className="relative pt-20 px-4 md:px-8 max-w-7xl mx-auto w-full">
+      <section className="relative pt-20 px-4 md:px-8 max-w-7xl mx-auto w-full overflow-hidden">
         {/* Background Gradients */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-amber-500/20 dark:bg-amber-500/10 rounded-full blur-[100px] pointer-events-none -z-10" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] sm:w-[600px] h-[300px] sm:h-[600px] max-w-full bg-amber-500/20 dark:bg-amber-500/10 rounded-full blur-[100px] pointer-events-none -z-10" />
         
         <div className="text-center max-w-3xl mx-auto space-y-8">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-sm font-medium text-amber-600 dark:text-amber-400 mb-4 animate-in slide-in-from-bottom-4 fade-in duration-700">
@@ -127,10 +128,13 @@ export default function Home() {
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-in slide-in-from-bottom-8 fade-in duration-700 delay-300">
-            <button className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white rounded-full font-bold text-lg shadow-lg shadow-orange-500/25 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2">
+            <Link 
+              href="/katalog" 
+              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white rounded-full font-bold text-lg shadow-lg shadow-orange-500/25 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+            >
               <Search className="w-5 h-5" />
               {t.hero.findMaster}
-            </button>
+            </Link>
             <Link href="/qanday-ishlaydi" className="w-full sm:w-auto px-8 py-4 glass text-foreground rounded-full font-bold text-lg hover:bg-surface-hover transition-all flex items-center justify-center gap-2">
               {t.hero.howItWorks}
               <ChevronRight className="w-5 h-5" />
@@ -229,10 +233,10 @@ export default function Home() {
       </section>
 
       {/* 4. Craftsman Directory Preview */}
-      <section className="px-4 md:px-8 max-w-7xl mx-auto w-full">
+      <section id="catalog" className="px-4 md:px-8 max-w-7xl mx-auto w-full scroll-mt-24">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-3xl font-bold text-foreground">{t.navbar.directory}</h2>
-          <Link href="/search" className="text-amber-600 hover:text-amber-700 font-medium flex items-center gap-1">
+          <Link href="/katalog" className="text-amber-600 hover:text-amber-700 font-medium flex items-center gap-1">
             {t.categories.all} <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
@@ -246,7 +250,7 @@ export default function Home() {
             >
               <div className="flex gap-3 md:gap-4 items-start">
                 <div className="relative w-14 h-14 md:w-16 md:h-16 rounded-2xl overflow-hidden flex-shrink-0 shadow-sm">
-                  <Image src={master.image} alt={master.name} fill className="object-cover" />
+                  <AvatarImage src={master.image} alt={master.name} fill className="object-cover" />
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-foreground group-hover:text-amber-500 transition-colors flex items-center gap-1">
