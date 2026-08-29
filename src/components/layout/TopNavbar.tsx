@@ -8,6 +8,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Language } from "@/lib/dictionary";
 import { AuthModal } from "@/components/modals/AuthModal";
 import { AiModal } from "@/components/modals/AiModal";
+import { useAuth } from "@/hooks/useAuth";
 
 const LANGUAGES: Language[] = ["UZ", "RU", "EN"];
 
@@ -18,7 +19,14 @@ export function TopNavbar() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isAiOpen, setIsAiOpen] = useState(false);
 
+  const { user } = useAuth();
   const [session, setSession] = useState<{ type: 'client' | 'master' | 'admin', name: string, id?: string, is_pro?: boolean } | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      setSession({ type: 'master', name: user.name, id: String(user.id), is_pro: !!user.is_pro });
+    }
+  }, [user]);
 
   useEffect(() => {
     setMounted(true);
