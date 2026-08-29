@@ -80,8 +80,8 @@ export default function SuperAdminPage() {
 
   const handleAddMaster = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.category || !formData.phone || !formData.login || !formData.password) {
-      alert("Iltimos, barcha majburiy maydonlarni to'ldiring!");
+    if (!formData.name || !formData.category || !formData.phone || !formData.login || !formData.password || !formData.city || !formData.district) {
+      alert("Iltimos, barcha majburiy maydonlarni (shu jumladan Shahar va Tumanni) to'ldiring!");
       return;
     }
 
@@ -418,15 +418,55 @@ export default function SuperAdminPage() {
                   </div>
                 </div>
 
+                {/* Shahar va Tuman Dropdown Grid (Talab 1 & 2) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-stone-400 mb-1.5">Manzil / Tuman</label>
-                    <input type="text" name="address" value={formData.address} onChange={handleInputChange} className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" placeholder="Chilonzor tumani" />
+                    <label className="block text-sm font-medium text-stone-400 mb-1.5">Shahar / Viloyat *</label>
+                    <select
+                      required
+                      name="city"
+                      value={formData.city || "Toshkent shahri"}
+                      onChange={(e) => {
+                        const selectedCity = e.target.value;
+                        const regData = UZBEKISTAN_REGIONS.find(r => r.city === selectedCity);
+                        const defaultDistrict = regData?.districts[0] || "";
+                        setFormData(prev => ({
+                          ...prev,
+                          city: selectedCity,
+                          district: defaultDistrict
+                        }));
+                      }}
+                      className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500 cursor-pointer appearance-none"
+                    >
+                      {UZBEKISTAN_REGIONS.map((r) => (
+                        <option key={r.city} value={r.city}>
+                          📍 {r.city}
+                        </option>
+                      ))}
+                    </select>
                   </div>
+
                   <div>
-                    <label className="block text-sm font-medium text-stone-400 mb-1.5">Boshlang'ich narx (so'm)</label>
-                    <input type="number" name="price" value={formData.price} onChange={handleInputChange} className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" placeholder="100 000" />
+                    <label className="block text-sm font-medium text-stone-400 mb-1.5">Tuman / Hudud *</label>
+                    <select
+                      required
+                      name="district"
+                      value={formData.district || ""}
+                      onChange={handleInputChange}
+                      className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500 cursor-pointer appearance-none"
+                    >
+                      {((UZBEKISTAN_REGIONS.find(r => r.city === (formData.city || "Toshkent shahri"))?.districts) || []).map((d) => (
+                        <option key={d} value={d}>
+                          🏡 {d}
+                        </option>
+                      ))}
+                    </select>
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-stone-400 mb-1.5">Boshlang'ich narx (so'm)</label>
+                  <input type="number" name="price" value={formData.price} onChange={handleInputChange} className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" placeholder="100 000" />
                 </div>
 
                 <div className="mt-8 pt-6 border-t border-stone-800">
