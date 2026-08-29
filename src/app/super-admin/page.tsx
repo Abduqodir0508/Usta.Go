@@ -18,6 +18,8 @@ const getBase64 = (file: File): Promise<string> => {
 
 const MOCK_ACTIVITY: any[] = [];
 
+import { UZBEKISTAN_REGIONS } from "@/lib/regions";
+
 export default function SuperAdminPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'masters' | 'add' | 'activity'>('masters');
@@ -30,7 +32,7 @@ export default function SuperAdminPage() {
 
   // Form State
   const [formData, setFormData] = useState({
-    name: "", category: "", phone: "", telegram: "", address: "", price: "", login: "", password: ""
+    name: "", category: "", phone: "", telegram: "", city: "Toshkent shahri", district: "Yunusobod tumani", address: "", price: "", login: "", password: ""
   });
 
   const [cropConfig, setCropConfig] = useState<{ src: string } | null>(null);
@@ -91,12 +93,16 @@ export default function SuperAdminPage() {
         avatarUrl = await getBase64(avatarFile);
       }
 
+      const fullAddress = `${formData.city}, ${formData.district}${formData.address ? `, ${formData.address}` : ""}`;
+
       const newMaster = {
         name: formData.name,
         category: formData.category,
         phone: formData.phone,
         telegram: formData.telegram,
-        address: formData.address,
+        city: formData.city,
+        district: formData.district,
+        address: fullAddress,
         price: formData.price ? parseInt(formData.price) : 0,
         login: formData.login,
         password: formData.password,
@@ -113,7 +119,7 @@ export default function SuperAdminPage() {
       
       if (data) {
         setMastersList([data[0], ...mastersList]);
-        setFormData({ name: "", category: "", phone: "", telegram: "", address: "", price: "", login: "", password: "" });
+        setFormData({ name: "", category: "", phone: "", telegram: "", city: "Toshkent shahri", district: "Yunusobod tumani", address: "", price: "", login: "", password: "" });
         setAvatarFile(null);
         setToastMessage("Usta muvaffaqiyatli qo'shildi!");
         
@@ -158,28 +164,43 @@ export default function SuperAdminPage() {
         avatarUrl = await getBase64(avatarFile);
       }
 
+      const fullAddress = `${editingMaster.city || 'Toshkent shahri'}, ${editingMaster.district || ''}${editingMaster.address_details ? `, ${editingMaster.address_details}` : ''}`;
+
+      const updatePayload = {
+        name: editingMaster.name,
+        category: editingMaster.category,
+        phone: editingMaster.phone,
+        telegram: editingMaster.telegram,
+        city: editingMaster.city || 'Toshkent shahri',
+        district: editingMaster.district || '',
+        address: fullAddress,
+        price: editingMaster.price,
+        bio: (editingMaster.bio || '').slice(0, 250),
+        login: editingMaster.login,
+        password: editingMaster.password,
+        avatar_url: avatarUrl
+      };
+
       const { error } = await supabase
         .from('ustalar')
-        .update({
-          name: editingMaster.name,
-          category: editingMaster.category,
-          phone: editingMaster.phone,
-          telegram: editingMaster.telegram,
-          address: editingMaster.address,
-          price: editingMaster.price,
-          login: editingMaster.login,
-          password: editingMaster.password,
-          avatar_url: avatarUrl
-        })
+        .update(updatePayload)
         .eq('id', editingMaster.id);
 
       if (error) throw error;
 
-      setMastersList(mastersList.map(m => m.id === editingMaster.id ? { ...editingMaster, avatar_url: avatarUrl } : m));
+      await supabase.from('profiles').update({
+        full_name: editingMaster.name,
+        city: editingMaster.city,
+        district: editingMaster.district,
+        avatar_url: avatarUrl,
+        bio: (editingMaster.bio || '').slice(0, 250)
+      }).eq('id', editingMaster.id);
+
+      setMastersList(mastersList.map(m => m.id === editingMaster.id ? { ...m, ...updatePayload } : m));
       setIsEditModalOpen(false);
       setEditingMaster(null);
       setAvatarFile(null);
-      setToastMessage("Ma'lumotlar muvaffaqiyatli yangilandi!");
+      setToastMessage("Ma'lumotlar muvaffaqiyatli yangilandi (PUT)!");
       setTimeout(() => setToastMessage(""), 2000);
     } catch (error) {
       console.error("Super Admin Edit (PUT) xatoligi:", error);
@@ -492,9 +513,61 @@ export default function SuperAdminPage() {
                   <input type="text" name="telegram" value={editingMaster.telegram || ''} onChange={e => setEditingMaster({ ...editingMaster, telegram: e.target.value })} className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-stone-400 mb-1.5">Manzil / Tuman</label>
-                  <input type="text" name="address" value={editingMaster.address || ''} onChange={e => setEditingMaster({ ...editingMaster, address: e.target.value })} className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" />
+                  <label className="block text-sm font-medium text-stone-400 mb-1.5">Viloyat / Shahar *</label>
+                  <select
+                    required
+                    value={editingMaster.city || "Toshkent shahri"}
+                    onChange={(e) => {
+                      const selectedCity = e.target.value;
+                      const regData = UZBEKISTAN_REGIONS.find(r => r.city === selectedCity);
+                      const defaultDistrict = regData?.districts[0] || "";
+                      setEditingMaster({
+                        ...editingMaster,
+                        city: selectedCity,
+                        district: defaultDistrict
+                      });
+                    }}
+                    className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500 cursor-pointer"
+                  >
+                    {UZBEKISTAN_REGIONS.map((r) => (
+                      <option key={r.city} value={r.city}>
+                        📍 {r.city}
+                      </option>
+                    ))}
+                  </select>
                 </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-stone-400 mb-1.5">Tuman / Shahar ichi *</label>
+                  <select
+                    required
+                    value={editingMaster.district || ""}
+                    onChange={(e) => setEditingMaster({ ...editingMaster, district: e.target.value })}
+                    className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500 cursor-pointer"
+                  >
+                    {((UZBEKISTAN_REGIONS.find(r => r.city === (editingMaster.city || "Toshkent shahri"))?.districts) || []).map((d) => (
+                      <option key={d} value={d}>
+                        🏡 {d}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="col-span-1 md:col-span-2">
+                  <label className="block text-sm font-medium text-stone-400 mb-1.5 flex justify-between">
+                    <span>Biografiya / Opisaniye (Max 250 belgi)</span>
+                    <span className="text-amber-500 font-mono font-bold">{(editingMaster.bio || "").length} / 250</span>
+                  </label>
+                  <textarea
+                    rows={3}
+                    maxLength={250}
+                    value={editingMaster.bio || ""}
+                    onChange={(e) => setEditingMaster({ ...editingMaster, bio: e.target.value.slice(0, 250) })}
+                    placeholder="Usta haqida qisqacha ma'lumot..."
+                    className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500 text-sm"
+                  />
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-stone-400 mb-1.5">Boshlang'ich narx</label>
                   <input type="number" name="price" value={editingMaster.price || ''} onChange={e => setEditingMaster({ ...editingMaster, price: e.target.value })} className="w-full bg-[#181513] border border-stone-700/80 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" />

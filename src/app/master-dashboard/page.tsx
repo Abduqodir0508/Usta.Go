@@ -357,6 +357,99 @@ export default function Dashboard() {
               </div>
             </div>
 
+            {/* Read-only Name/Phone & Editable Bio Form (Talab 3) */}
+            <div className="bg-surface border border-border-color rounded-2xl p-5 md:p-6 space-y-6">
+              <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                <User className="w-5 h-5 text-amber-500" />
+                <span>Shaxsiy Ma'lumotlar va Biografiya</span>
+              </h3>
+
+              {/* Read Only Name & Phone */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5 flex items-center justify-between">
+                    <span>Ism-Familiya</span>
+                    <span className="text-[10px] text-amber-500 font-medium flex items-center gap-1">
+                      <Lock className="w-3 h-3" /> Read-only
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    value={currentMaster?.name || ""}
+                    readOnly
+                    disabled
+                    className="w-full px-4 py-2.5 bg-background/50 border border-border-color rounded-xl text-muted-foreground font-medium text-sm cursor-not-allowed select-none opacity-80"
+                  />
+                  <p className="text-[11px] text-stone-500 mt-1">Faqat Admin o'zgartira oladi</p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5 flex items-center justify-between">
+                    <span>Telefon Raqam</span>
+                    <span className="text-[10px] text-amber-500 font-medium flex items-center gap-1">
+                      <Lock className="w-3 h-3" /> Read-only
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    value={currentMaster?.phone || ""}
+                    readOnly
+                    disabled
+                    className="w-full px-4 py-2.5 bg-background/50 border border-border-color rounded-xl text-muted-foreground font-medium text-sm cursor-not-allowed select-none opacity-80"
+                  />
+                  <p className="text-[11px] text-stone-500 mt-1">Faqat Admin o'zgartira oladi</p>
+                </div>
+              </div>
+
+              {/* Bio Textarea with 250 limit */}
+              <div className="space-y-2 pt-2 border-t border-border-color">
+                <label className="block text-xs font-semibold text-foreground flex items-center justify-between">
+                  <span>Biografiya / Opisaniye (Max 250 belgi)</span>
+                  <span className={cn(
+                    "text-xs font-bold font-mono",
+                    (currentMaster?.bio?.length || 0) >= 240 ? "text-red-500" : "text-amber-500"
+                  )}>
+                    {(currentMaster?.bio?.length || 0)} / 250
+                  </span>
+                </label>
+
+                <textarea
+                  rows={4}
+                  maxLength={250}
+                  value={currentMaster?.bio || ""}
+                  onChange={(e) => {
+                    const text = e.target.value.slice(0, 250);
+                    setCurrentMaster((prev: any) => ({ ...prev, bio: text }));
+                  }}
+                  placeholder="O'zingiz va xizmatlaringiz haqida qisqacha ma'lumot yozing (masalan: 10 yillik tajribaga ega santexnik ustaman...)"
+                  className="w-full px-4 py-3 bg-background border border-border-color focus:border-amber-500 rounded-xl text-foreground text-sm outline-none transition"
+                />
+
+                <div className="flex justify-end pt-1">
+                  <button
+                    onClick={async () => {
+                      if (!currentMaster?.id) return;
+                      const bioText = (currentMaster.bio || "").slice(0, 250);
+                      
+                      try {
+                        await supabase.from("ustalar").update({ bio: bioText }).eq("id", currentMaster.id);
+                        await supabase.from("profiles").update({ bio: bioText }).eq("id", currentMaster.id);
+                        
+                        localStorage.setItem("usta_current_master", JSON.stringify(currentMaster));
+                        window.dispatchEvent(new Event("storage"));
+                        alert("Biografiya muvaffaqiyatli saqlandi!");
+                      } catch (err) {
+                        alert("Saqlashda xatolik yuz berdi!");
+                      }
+                    }}
+                    className="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold text-xs rounded-xl shadow-md transition-all"
+                  >
+                    Biografiyani saqlash
+                  </button>
+                </div>
+              </div>
+            </div>
+
             {/* Admin Edit Lock Notice */}
             <div className="bg-surface-hover border border-border-color rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-start gap-3">

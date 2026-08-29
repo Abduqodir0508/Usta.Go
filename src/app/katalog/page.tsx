@@ -10,10 +10,15 @@ import { supabase } from "@/lib/supabase";
 import { AvatarImage } from "@/components/ui/AvatarImage";
 import { VerifiedBadge } from "@/components/ui/VerifiedBadge";
 
+import { UZBEKISTAN_REGIONS, matchRegionOrCity } from "@/lib/regions";
+
+const REGION_OPTIONS = ["Barcha shaharlar", ...UZBEKISTAN_REGIONS.map(r => r.city)];
+
 export default function SearchPage() {
   const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
+  const [selectedCity, setSelectedCity] = useState("Barcha shaharlar");
   const [showFilters, setShowFilters] = useState(false);
   const [mastersList, setMastersList] = useState<any[]>([]);
   
@@ -43,6 +48,8 @@ export default function SearchPage() {
           verified: m.is_pro,
           image: m.avatar_url || "https://i.pravatar.cc/150?u=" + m.id,
           location: m.address || "Toshkent",
+          city: m.city,
+          district: m.district,
           rawCategory: m.category,
           is_pro: m.is_pro
         }));
@@ -62,16 +69,16 @@ export default function SearchPage() {
     { key: "mover", label: t.categories.mover },
   ];
 
-  // Filter masters
+  // Filter masters with normalized city and category
   const filteredMasters = mastersList.filter((master) => {
-    // We get the translated string for the master's category
     const masterCategoryLabel = t.categories[master.categoryKey as keyof typeof t.categories] || master.categoryKey;
     
     const matchesSearch = master.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           masterCategoryLabel.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = activeCategory === "all" || master.categoryKey === activeCategory;
+    const matchesCity = matchRegionOrCity(master.city, master.district, master.location, selectedCity);
     
-    return matchesSearch && matchesCategory;
+    return matchesSearch && matchesCategory && matchesCity;
   });
 
   return (
@@ -85,8 +92,8 @@ export default function SearchPage() {
         </div>
       </div>
 
-      {/* Search Input & Filter Toggle */}
-      <div className="flex gap-2">
+      {/* Search Input & City Dropdown */}
+      <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
           <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
             <Search className="h-5 w-5 text-muted-foreground" />
@@ -99,15 +106,21 @@ export default function SearchPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <button 
-          onClick={() => setShowFilters(!showFilters)}
-          className={cn(
-            "p-3 border border-border-color rounded-2xl flex items-center justify-center transition-colors",
-            showFilters ? "bg-amber-500 text-white border-amber-500" : "bg-surface text-foreground hover:bg-surface-hover"
-          )}
-        >
-          {showFilters ? <X className="w-6 h-6" /> : <Filter className="w-6 h-6" />}
-        </button>
+
+        {/* City Filter Dropdown */}
+        <div className="w-full sm:w-64">
+          <select
+            value={selectedCity}
+            onChange={(e) => setSelectedCity(e.target.value)}
+            className="w-full px-4 py-3 bg-background border border-border-color rounded-2xl text-foreground text-sm outline-none focus:ring-2 focus:ring-amber-500 font-medium cursor-pointer"
+          >
+            {REGION_OPTIONS.map((region) => (
+              <option key={region} value={region}>
+                📍 {region}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Categories */}

@@ -9,22 +9,9 @@ import { supabase } from "@/lib/supabase";
 import { AvatarImage } from "@/components/ui/AvatarImage";
 import { VerifiedBadge } from "@/components/ui/VerifiedBadge";
 
-const REGIONS = [
-  "Barcha shaharlar",
-  "Toshkent",
-  "Samarqand",
-  "Buxoro",
-  "Andijon",
-  "Farg'ona",
-  "Namangan",
-  "Qashqadaryo",
-  "Surxondaryo",
-  "Xorazm",
-  "Navoiy",
-  "Jizzax",
-  "Sirdaryo",
-  "Qoraqalpog'iston",
-];
+import { UZBEKISTAN_REGIONS, matchRegionOrCity } from "@/lib/regions";
+
+const REGION_OPTIONS = ["Barcha shaharlar", ...UZBEKISTAN_REGIONS.map(r => r.city)];
 
 export default function ReytingPage() {
   const { t } = useLanguage();
@@ -67,16 +54,13 @@ export default function ReytingPage() {
     { key: "gruzchik", label: "Gruzchik / Yuk tashish" },
   ];
 
-  // Filter & Sort Masters
+  // Filter & Sort Masters with normalized city/district matching
   const filteredMasters = masters.filter((m) => {
     const catMatch =
       selectedCategory === "all" ||
       (m.category && m.category.toLowerCase().includes(selectedCategory.toLowerCase()));
 
-    const cityMatch =
-      selectedCity === "Barcha shaharlar" ||
-      (m.address && m.address.toLowerCase().includes(selectedCity.toLowerCase())) ||
-      (m.location && m.location.toLowerCase().includes(selectedCity.toLowerCase()));
+    const cityMatch = matchRegionOrCity(m.city, m.district, m.address || m.location, selectedCity);
 
     const searchMatch =
       !searchQuery.trim() ||
@@ -124,7 +108,7 @@ export default function ReytingPage() {
               onChange={(e) => setSelectedCity(e.target.value)}
               className="w-full px-4 py-2.5 bg-background border border-border-color rounded-xl text-foreground text-sm outline-none focus:border-amber-500 font-medium cursor-pointer"
             >
-              {REGIONS.map((region) => (
+              {REGION_OPTIONS.map((region) => (
                 <option key={region} value={region}>
                   📍 {region}
                 </option>
