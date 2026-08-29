@@ -147,14 +147,15 @@ bot.action(/approve_(.+)_(.+)_(.+)/, async (ctx) => {
 
   // Supabase'da yangilash
   if (ustaId && ustaId !== "Noma'lum / Saytdan kirmagan") {
-    await supabase
-      .from('ustalar')
-      .update({
-        is_pro: true,
-        pro_plan: plan,
-        pro_expires_at: expiresAt.toISOString()
-      })
-      .eq('id', ustaId);
+    const updateData = {
+      is_pro: true,
+      is_verified: true,
+      pro_plan: plan,
+      pro_expires_at: expiresAt.toISOString(),
+      pro_activated_at: new Date().toISOString()
+    };
+    await supabase.from('ustalar').update(updateData).eq('id', ustaId);
+    await supabase.from('profiles').update(updateData).eq('id', ustaId);
   }
 
   // Ustaga xabar yuborish
@@ -163,6 +164,40 @@ bot.action(/approve_(.+)_(.+)_(.+)/, async (ctx) => {
   } catch (e) {}
 
   return ctx.editMessageCaption(ctx.callbackQuery.message.caption + "\n\n<b>✅ ADMIN TOMONIDAN TASDIQLANDI!</b>", { parse_mode: 'HTML' });
+});
+
+// Direct PRO verification handler (e.g. verify_pro_USER_ID)
+bot.action(/verify_pro_(.+)/, async (ctx) => {
+  const userId = ctx.match[1];
+  const now = new Date().toISOString();
+
+  try {
+    const updateData = {
+      is_pro: true,
+      is_verified: true,
+      pro_activated_at: now
+    };
+
+    const { error: err1 } = await supabase.from('ustalar').update(updateData).eq('id', userId);
+    await supabase.from('profiles').update(updateData).eq('id', userId);
+
+    if (!err1) {
+      await ctx.answerCbQuery("Pro status muvaffaqiyatli berildi! ✅");
+      if (ctx.callbackQuery?.message?.caption) {
+        await ctx.editMessageCaption(
+          ctx.callbackQuery.message.caption + `\n\n<b>✅ PRO VERSIYAGA O'TKAZILDI! (ID: ${userId})</b>`,
+          { parse_mode: 'HTML' }
+        );
+      } else if (ctx.callbackQuery?.message) {
+        await ctx.editMessageText(`✅ Ushbu usta Pro versiyaga o'tkazildi! (ID: ${userId})`);
+      }
+    } else {
+      await ctx.answerCbQuery("Xatolik yuz berdi ❌", { show_alert: true });
+    }
+  } catch (err) {
+    console.error("verify_pro error:", err);
+    await ctx.answerCbQuery("Xatolik yuz berdi ❌", { show_alert: true });
+  }
 });
 
 bot.action(/reject_(.+)_(.+)/, async (ctx) => {
