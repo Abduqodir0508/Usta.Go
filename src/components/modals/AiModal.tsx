@@ -15,6 +15,7 @@ interface AiModalProps {
 
 import { supabase } from "@/lib/supabase";
 import { AvatarImage } from "@/components/ui/AvatarImage";
+import { VerifiedBadge } from "@/components/ui/VerifiedBadge";
 
 export function AiModal({ isOpen, onClose }: AiModalProps) {
   const { t } = useLanguage();
@@ -50,26 +51,46 @@ export function AiModal({ isOpen, onClose }: AiModalProps) {
 
     try {
       const queryLower = userMsg.toLowerCase();
+      
+      // Category filter
       let categoryFilter = "";
       if (queryLower.includes("mebel") || queryLower.includes("shkaf") || queryLower.includes("stol") || queryLower.includes("krovat") || queryLower.includes("stul")) {
         categoryFilter = "mebel";
       } else if (queryLower.includes("santexnik") || queryLower.includes("jo'mrak") || queryLower.includes("jomrak") || queryLower.includes("truba") || queryLower.includes("kran") || queryLower.includes("unitaz") || queryLower.includes("vanna")) {
         categoryFilter = "santexnik";
-      } else if (queryLower.includes("elektr") || queryLower.includes("rozetka") || queryLower.includes("sim") || queryLower.includes("lampa") || queryLower.includes("luyustra") || queryLower.includes("shit")) {
+      } else if (queryLower.includes("elektr") || queryLower.includes("rozetka") || queryLower.includes("sim") || queryLower.includes("lampa") || queryLower.includes("lyustra") || queryLower.includes("shit")) {
         categoryFilter = "elektr";
       } else if (queryLower.includes("remont") || queryLower.includes("bo'yoq") || queryLower.includes("pobelka") || queryLower.includes("oboy") || queryLower.includes("kafel") || queryLower.includes("plitka")) {
         categoryFilter = "remont";
+      } else if (queryLower.includes("gruzchik") || queryLower.includes("yuk") || queryLower.includes("tashish") || queryLower.includes("mashina")) {
+        categoryFilter = "gruzchik";
+      }
+
+      // City / Region filter
+      const cities = ["toshkent", "samarqand", "buxoro", "andijon", "farg'ona", "namangan", "qashqadaryo", "surxondaryo", "xorazm", "navoiy", "jizzax", "sirdaryo", "qoraqalpog'iston"];
+      let detectedCity = "";
+      for (const city of cities) {
+        if (queryLower.includes(city)) {
+          detectedCity = city;
+          break;
+        }
       }
 
       let queryBuilder = supabase.from('ustalar').select('*').eq('is_banned', false);
 
       if (categoryFilter) {
         queryBuilder = queryBuilder.ilike('category', `%${categoryFilter}%`);
-      } else {
+      }
+      
+      if (detectedCity) {
+        queryBuilder = queryBuilder.or(`address.ilike.%${detectedCity}%,bio.ilike.%${detectedCity}%`);
+      }
+
+      if (!categoryFilter && !detectedCity) {
         queryBuilder = queryBuilder.or(`name.ilike.%${userMsg}%,category.ilike.%${userMsg}%,address.ilike.%${userMsg}%`);
       }
 
-      const { data: foundMasters, error } = await queryBuilder.order('is_pro', { ascending: false }).limit(4);
+      const { data: foundMasters, error } = await queryBuilder.order('is_pro', { ascending: false }).order('rating', { ascending: false }).limit(4);
 
       setIsTyping(false);
 
@@ -82,18 +103,20 @@ export function AiModal({ isOpen, onClose }: AiModalProps) {
           price: m.price ? parseInt(m.price) : 50000,
           image: m.avatar_url || null,
           phone: m.phone,
-          is_pro: m.is_pro
+          is_pro: m.is_pro,
+          address: m.address || "Toshkent"
         }));
 
+        const cityText = detectedCity ? ` (${detectedCity.charAt(0).toUpperCase() + detectedCity.slice(1)} bo'yicha)` : "";
         setMessages(prev => [...prev, { 
           role: 'ai', 
-          content: `${t.aiShowcase?.aiMessage || "Sizning so'rovingizga mos eng yaxshi ustalarni topdim:"}`,
+          content: `${t.aiShowcase?.aiMessage || "Sizning so'rovingizga mos eng yaxshi ustalarni topdim"}${cityText}:`,
           masters: formatted
         }]);
       } else {
         setMessages(prev => [...prev, { 
           role: 'ai', 
-          content: "Kechirasiz, ushbu yo'nalish bo'yicha hozircha ustalar topilmadi. Katalogimizni ko'rib chiqishingiz mumkin."
+          content: "Kechirasiz, ushbu yo'nalish yoki shahar bo'yicha mos ustalar topilmadi. Katalog sahifasidan barcha ustalarni ko'rishingiz mumkin."
         }]);
       }
     } catch (err) {
@@ -172,7 +195,12 @@ export function AiModal({ isOpen, onClose }: AiModalProps) {
                               <div className="flex-1 min-w-0">
                                 <h4 className="font-bold text-foreground text-sm truncate flex items-center gap-1">
                                   {master.name}
-                                  {master.is_pro && <span className="text-[10px] bg-orange-500/20 text-orange-500 font-bold px-1.5 py-0.5 rounded">PRO</span>}
+                                  {master.is_pro && (
+                                    <>
+                                      <VerifiedBadge className="w-4 h-4" />
+                                      <span className="text-[10px] bg-orange-500/20 text-orange-500 font-bold px-1.5 py-0.5 rounded">PRO</span>
+                                    </>
+                                  )}
                                 </h4>
                                 <p className="text-xs text-muted-foreground">⭐ {master.rating} • {master.category}</p>
                                 <p className="text-amber-500 font-bold text-xs mt-0.5">{master.price.toLocaleString()} so'm</p>

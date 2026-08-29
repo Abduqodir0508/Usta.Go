@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import CropModal from "@/components/modals/CropModal";
 import ProPricingModal from "@/components/modals/ProPricingModal";
+import { VerifiedBadge } from "@/components/ui/VerifiedBadge";
 
 export default function Dashboard() {
   const { t } = useLanguage();
@@ -71,6 +72,17 @@ export default function Dashboard() {
 
   const handleUploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0] || !currentMaster) return;
+
+    const maxImages = currentMaster.is_pro ? 15 : 5;
+    if (portfolioImages.length >= maxImages) {
+      if (!currentMaster.is_pro) {
+        alert("Oddiy foydalanuvchilar portfolioga ko'pi bilan 5 ta rasm yuklay oladi. 15 tagacha rasm yuklash uchun PRO tarifga o'ting!");
+      } else {
+        alert("Siz portfolioga maksimal 15 ta rasm yukladingiz!");
+      }
+      e.target.value = '';
+      return;
+    }
     
     const file = e.target.files[0];
     const reader = new FileReader();

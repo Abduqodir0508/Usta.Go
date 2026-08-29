@@ -140,10 +140,26 @@ bot.action(/approve_(.+)_(.+)_(.+)/, async (ctx) => {
 
   // Muddatni hisoblash
   let expiresAt = new Date();
-  if (plan === '1m') expiresAt.setMonth(expiresAt.getMonth() + 1);
-  else if (plan === '3m') expiresAt.setMonth(expiresAt.getMonth() + 4);
-  else if (plan === '6m') expiresAt.setMonth(expiresAt.getMonth() + 8);
-  else if (plan === 'life') expiresAt = new Date('2099-01-01T00:00:00Z');
+  let daysCount = 30;
+  let planLabel = "1 oylik";
+
+  if (plan === '1m' || plan === '1_oylik') {
+    expiresAt.setMonth(expiresAt.getMonth() + 1);
+    daysCount = 30;
+    planLabel = "1 oylik";
+  } else if (plan === '3m' || plan === '3_oylik') {
+    expiresAt.setMonth(expiresAt.getMonth() + 4);
+    daysCount = 120;
+    planLabel = "3 oylik (+1 oy bonus)";
+  } else if (plan === '6m' || plan === '6_oylik') {
+    expiresAt.setMonth(expiresAt.getMonth() + 8);
+    daysCount = 240;
+    planLabel = "6 oylik (+2 oy bonus)";
+  } else if (plan === 'life' || plan === 'lifetime') {
+    expiresAt = new Date('2099-01-01T00:00:00Z');
+    daysCount = 36500;
+    planLabel = "Umrbod (Lifetime)";
+  }
 
   // Supabase'da yangilash
   if (ustaId && ustaId !== "Noma'lum / Saytdan kirmagan") {
@@ -152,16 +168,20 @@ bot.action(/approve_(.+)_(.+)_(.+)/, async (ctx) => {
       is_verified: true,
       pro_plan: plan,
       pro_expires_at: expiresAt.toISOString(),
-      pro_activated_at: new Date().toISOString()
+      pro_activated_at: new Date().toISOString(),
+      pro_modal_shown: false
     };
     await supabase.from('ustalar').update(updateData).eq('id', ustaId);
     await supabase.from('profiles').update(updateData).eq('id', ustaId);
   }
 
-  // Ustaga xabar yuborish
+  // Ustaga xabar yuborish (Talab 1 bo'yicha)
   try {
-    await ctx.telegram.sendMessage(userTgId, "🎉 To'lovingiz tasdiqlandi! UstaGo PRO faollashtirildi.");
-  } catch (e) {}
+    const msg = `✅ <b>To'lovingiz tasdiqlandi! UstaGo PRO versiya faollashdi.</b>\n\n📦 Tanlangan tarif: <b>${planLabel}</b>\n\nSaytga kirib sahifani yangilang (refresh).\n\n<i>Eslatma: Obunangiz tugashiga 5 kun qolganida sizga avtomatik eslatma xabari yuboramiz.</i>`;
+    await ctx.telegram.sendMessage(userTgId, msg, { parse_mode: 'HTML' });
+  } catch (e) {
+    console.error("User Telegram send error:", e);
+  }
 
   return ctx.editMessageCaption(ctx.callbackQuery.message.caption + "\n\n<b>✅ ADMIN TOMONIDAN TASDIQLANDI!</b>", { parse_mode: 'HTML' });
 });

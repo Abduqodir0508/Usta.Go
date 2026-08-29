@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { supabase } from "@/lib/supabase";
 import { AvatarImage } from "@/components/ui/AvatarImage";
+import { VerifiedBadge } from "@/components/ui/VerifiedBadge";
 
 export default function SearchPage() {
   const { t } = useLanguage();
@@ -151,8 +152,9 @@ export default function SearchPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <h3 className="font-bold text-foreground truncate group-hover:text-amber-500 transition-colors">
+                    <h3 className="font-bold text-foreground truncate group-hover:text-amber-500 transition-colors flex items-center gap-1">
                       {master.name}
+                      {master.is_pro && <VerifiedBadge className="w-4 h-4" />}
                     </h3>
                   </div>
                   <p className="text-sm text-muted-foreground mb-2">

@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Wrench, Globe, CheckCircle2, User, LogOut } from "lucide-react";
+import { Wrench, Globe, CheckCircle2, User, LogOut, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Language } from "@/lib/dictionary";
 import { AuthModal } from "@/components/modals/AuthModal";
 import { AiModal } from "@/components/modals/AiModal";
+import { ProSuccessModal } from "@/components/modals/ProSuccessModal";
+import { VerifiedBadge } from "@/components/ui/VerifiedBadge";
 import { useAuth } from "@/hooks/useAuth";
 
 const LANGUAGES: Language[] = ["UZ", "RU", "EN"];
@@ -18,6 +20,7 @@ export function TopNavbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isAiOpen, setIsAiOpen] = useState(false);
+  const [isProSuccessOpen, setIsProSuccessOpen] = useState(false);
 
   const { user } = useAuth();
   const [session, setSession] = useState<{ type: 'client' | 'master' | 'admin', name: string, id?: string, is_pro?: boolean } | null>(null);
@@ -25,6 +28,14 @@ export function TopNavbar() {
   useEffect(() => {
     if (user) {
       setSession({ type: 'master', name: user.name, id: String(user.id), is_pro: !!user.is_pro });
+
+      // Check if user is PRO and pro_modal_shown is false or not celebrated in localStorage
+      if (user.is_pro) {
+        const celebrated = localStorage.getItem(`pro_celebrated_${user.id}`);
+        if (!celebrated && user.pro_modal_shown !== true) {
+          setIsProSuccessOpen(true);
+        }
+      }
     }
   }, [user]);
 
@@ -36,7 +47,6 @@ export function TopNavbar() {
     };
     
     const checkSession = () => {
-      // Check admin
       const isSuperAdmin = window.location.pathname === "/super-admin";
       if (isSuperAdmin) {
         setSession({ type: 'admin', name: "Super Admin", is_pro: true });
@@ -63,8 +73,6 @@ export function TopNavbar() {
     checkSession();
     window.addEventListener("scroll", handleScroll);
     window.addEventListener("storage", checkSession);
-    
-    // Custom event for same-tab auth changes
     window.addEventListener("auth_changed", checkSession);
     
     return () => {
@@ -107,6 +115,10 @@ export function TopNavbar() {
             </button>
             <Link href="/katalog" className="text-sm font-medium text-foreground opacity-70 hover:opacity-100 transition-opacity">
               {t.navbar.directory}
+            </Link>
+            <Link href="/reyting" className="text-sm font-semibold text-amber-500 hover:text-amber-600 transition-colors flex items-center gap-1">
+              <Trophy className="w-4 h-4" />
+              <span>Reyting</span>
             </Link>
             <Link href="/qanday-ishlaydi" className="text-sm font-medium text-foreground opacity-70 hover:opacity-100 transition-opacity">
               {t.navbar.faq}
@@ -176,19 +188,9 @@ export function TopNavbar() {
                     {session.name}
                   </span>
 
-                  {/* Faqat PRO yoki tasdiqlangan bo'lsa galochka chiqadi */}
+                  {/* PRO Verified Badge */}
                   {session.is_pro && (
-                    <svg
-                      className="w-3.5 h-3.5 text-blue-500 shrink-0"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
+                    <VerifiedBadge className="w-3.5 h-3.5" />
                   )}
                 </Link>
                 
@@ -232,6 +234,11 @@ export function TopNavbar() {
       {/* Modals */}
       <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
       <AiModal isOpen={isAiOpen} onClose={() => setIsAiOpen(false)} />
+      <ProSuccessModal 
+        isOpen={isProSuccessOpen} 
+        onClose={() => setIsProSuccessOpen(false)} 
+        user={user}
+      />
     </>
   );
 }

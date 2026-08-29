@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { Home, Search, ClipboardList, User } from "lucide-react";
+import { Home, Search, Trophy, ClipboardList, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { href: "/", icon: Home, label: "Bosh sahifa" },
-  { href: "/search", icon: Search, label: "Qidiruv" },
-  { href: "/dashboard", icon: ClipboardList, label: "Buyurtmalar" },
-  { href: "/profile", icon: User, label: "Profil" },
+  { href: "/katalog", icon: Search, label: "Katalog" },
+  { href: "/reyting", icon: Trophy, label: "Reyting" },
+  { href: "/master-dashboard", icon: ClipboardList, label: "Dashboard" },
 ];
 
 export function MobileNav() {
