@@ -18,7 +18,7 @@ export function TopNavbar() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isAiOpen, setIsAiOpen] = useState(false);
 
-  const [session, setSession] = useState<{ type: 'client' | 'master' | 'admin', name: string, id?: string } | null>(null);
+  const [session, setSession] = useState<{ type: 'client' | 'master' | 'admin', name: string, id?: string, is_pro?: boolean } | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -31,14 +31,14 @@ export function TopNavbar() {
       // Check admin
       const isSuperAdmin = window.location.pathname === "/super-admin";
       if (isSuperAdmin) {
-        setSession({ type: 'admin', name: "Super Admin" });
+        setSession({ type: 'admin', name: "Super Admin", is_pro: true });
         return;
       }
       
       const master = localStorage.getItem("usta_current_master");
       if (master) {
         const m = JSON.parse(master);
-        setSession({ type: 'master', name: m.name, id: m.id });
+        setSession({ type: 'master', name: m.name, id: m.id, is_pro: m.is_pro });
         return;
       }
       
@@ -154,24 +154,35 @@ export function TopNavbar() {
             {/* Auth/CTAs */}
             {mounted && session ? (
               <div className="flex items-center gap-2 md:gap-3">
-                {session.type === 'master' ? (
-                  <Link href="/master-dashboard" className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 text-amber-500 border border-amber-500/30 rounded-full text-xs font-medium hover:bg-amber-500 hover:text-white transition-all cursor-pointer">
-                    <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center text-white font-bold text-[10px]">
-                      {session.name.charAt(0)}
-                    </div>
-                    <span className="font-bold max-w-[80px] sm:max-w-[120px] truncate">
-                      {session.name}
-                    </span>
-                    <CheckCircle2 className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-                  </Link>
-                ) : (
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-surface rounded-full border border-border-color">
-                    <User className="w-3.5 h-3.5 text-amber-500" />
-                    <span className="text-xs font-medium text-foreground max-w-[80px] sm:max-w-[120px] truncate">
-                      {session.name}
-                    </span>
-                  </div>
-                )}
+                <Link
+                  href={session.type === 'master' ? "/master-dashboard" : "/katalog"}
+                  className="flex items-center gap-2 bg-orange-500/10 border border-orange-500/30 px-3 py-1.5 rounded-full hover:bg-orange-500/20 transition-all cursor-pointer"
+                >
+                  {/* Avatar / Bosh harf */}
+                  <span className="w-5 h-5 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                    {session.name?.[0] || 'U'}
+                  </span>
+
+                  {/* Ism */}
+                  <span className="text-orange-500 text-xs font-medium max-w-[80px] sm:max-w-[120px] truncate">
+                    {session.name}
+                  </span>
+
+                  {/* Faqat PRO yoki tasdiqlangan bo'lsa galochka chiqadi */}
+                  {session.is_pro && (
+                    <svg
+                      className="w-3.5 h-3.5 text-blue-500 shrink-0"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  )}
+                </Link>
                 
                 <button 
                   onClick={handleLogout}
