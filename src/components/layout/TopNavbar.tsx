@@ -153,47 +153,33 @@ export function TopNavbar() {
 
             {/* Auth/CTAs */}
             {mounted && session ? (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 md:gap-3">
                 {session.type === 'master' ? (
-                  <>
-                    <Link href="/master-dashboard" className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-surface rounded-full border border-border-color hover:border-amber-500/50 transition-colors cursor-pointer">
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center text-white font-bold text-xs">
-                        {session.name.charAt(0)}
-                      </div>
-                      <span className="text-sm font-bold text-foreground max-w-[100px] truncate">
-                        {session.name}
-                      </span>
-                      <CheckCircle2 className="w-4 h-4 text-blue-500" />
-                    </Link>
-                  </>
-                ) : session.type === 'client' ? (
-                  <>
-                    <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-surface rounded-full border border-border-color">
-                      <div className="w-6 h-6 rounded-full bg-stone-200 dark:bg-stone-800 flex items-center justify-center text-stone-500">
-                        <User className="w-4 h-4" />
-                      </div>
-                      <span className="text-sm font-medium text-foreground max-w-[100px] truncate">
-                        {session.name}
-                      </span>
+                  <Link href="/master-dashboard" className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 text-amber-500 border border-amber-500/30 rounded-full text-xs font-medium hover:bg-amber-500 hover:text-white transition-all cursor-pointer">
+                    <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center text-white font-bold text-[10px]">
+                      {session.name.charAt(0)}
                     </div>
-                  </>
+                    <span className="font-bold max-w-[80px] sm:max-w-[120px] truncate">
+                      {session.name}
+                    </span>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                  </Link>
                 ) : (
-                  <>
-                    <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-surface rounded-full border border-border-color">
-                      <span className="text-sm font-bold text-amber-500">
-                        {session.name}
-                      </span>
-                    </div>
-                  </>
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-surface rounded-full border border-border-color">
+                    <User className="w-3.5 h-3.5 text-amber-500" />
+                    <span className="text-xs font-medium text-foreground max-w-[80px] sm:max-w-[120px] truncate">
+                      {session.name}
+                    </span>
+                  </div>
                 )}
                 
                 <button 
                   onClick={handleLogout}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-full transition-colors font-medium text-sm"
-                  title="Chiqish"
+                  className="flex items-center gap-1 px-2.5 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-full transition-colors font-medium text-xs"
+                  title={t.dashboard?.logout || "Chiqish"}
                 >
                   <span className="hidden sm:inline">{t.dashboard?.logout || "Chiqish"}</span>
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="w-3.5 h-3.5" />
                 </button>
               </div>
             ) : (
@@ -213,9 +199,9 @@ export function TopNavbar() {
                 {/* Mobile Login Button */}
                 <button 
                   onClick={() => setIsAuthOpen(true)}
-                  className="md:hidden bg-[#ff6b00] text-xs px-3 py-1.5 rounded-full text-white font-semibold flex items-center justify-center whitespace-nowrap"
+                  className="md:hidden bg-gradient-to-r from-amber-500 to-orange-600 text-xs px-3 py-1.5 rounded-full text-white font-semibold flex items-center justify-center whitespace-nowrap shadow-md"
                 >
-                  Kirish
+                  🚪 Kirish
                 </button>
               </>
             )}
