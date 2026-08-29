@@ -19,76 +19,73 @@ const PLAN_DETAILS = {
   '1m': { label: '1 Oylik PRO', amount: '1 000' },
   '3m': { label: '3 Oylik PRO (+1 oy bonus)', amount: '1 000' },
   '6m': { label: '6 Oylik PRO (+2 oy bonus)', amount: '1 000' },
-  'life': { label: ' Umrbod PRO (Lifetime)', amount: '1 000' }
+  'life': { label: 'Umrbod PRO (Lifetime)', amount: '1 000' }
 };
 
 // Matnlar (3 tilda)
 const texts = {
   uz: {
-    welcome: "👋 Assalomu alaykum! UstaGo PRO rasmiy to'lov botiga xush kelibsiz.\n\nQuyidagi tariflardan birini tanlang:\n\n👨‍💻 Texnik yordam va Admin: @A_Husanboyev",
+    welcome: "👋 Assalomu alaykum! UstaGo PRO rasmiy to'lov botiga xush kelibsiz.\n\nQuyidagi tariflardan birini tanlang:\n\n👨‍💻 Admin / Bog'lanish: @A_Husanboyev",
     plans: {
       '1m': '1 Oylik PRO (1 000 UZS)',
       '3m': '3 Oylik PRO (+1 oy bonus) (1 000 UZS)',
       '6m': '6 Oylik PRO (+2 oy bonus) (1 000 UZS)',
       'life': '👑 Umrbod PRO (1 000 UZS)'
     },
-    payment_info: (planLabel, amount) => `📦 Tanlangan tarif: <b>${planLabel}</b>
-
-💳 <b>TO'LOV MA'LUMOTLARI:</b>
-• <b>Karta raqami:</b> <code>5614 6887 1438 0671</code> (Karta egasi: Ism M.S)
-• <b>To'lov summasi:</b> <b>${amount} UZS</b>
+    payment_info: (planLabel, amount) => `📦 <b>Tanlangan tarif:</b> ${planLabel}
+💰 <b>To'lov summasi:</b> ${amount} UZS
+💳 <b>Karta raqam:</b> <code>5614 6887 1438 0671</code> (M.S)
 
 ℹ️ <b>To'lov usullari:</b>
-To'lovni <b>Click</b>, <b>Payme</b>, <b>Uzum Bank</b> yoki istalgan mobil bank ilovasi orqali amalga oshirishingiz mumkin.
+To'lovni <b>Click</b>, <b>Payme</b>, <b>Uzum Bank</b> yoki boshqa ilovalar orqali o'tkazishingiz mumkin.
 
-⚠️ <b>MUHIM:</b>
-To'lovni amalga oshirgach, to'lov <b>chekining screenshotini (rasmini)</b> to'g'ridan-to'g'ri shu botga yuboring. Chekni yuborgach <b>5-10 daqiqa</b> kuting, adminlarimiz to'lovni tekshirib, PRO maqomingizni tez fursatda tasdiqlab berishadi!
+⚠️ <b>DIQQAT:</b>
+To'lovni amalga oshirgach, to'lov chekining rasmini (skrinshotini) shu yerga yuboring 📸.
+Chekni yuborgach <b>5-10 daqiqa</b> kuting, adminlarimiz tekshirib PRO maqomingizni tasdiqlaydi.
 
-💬 <i>Savollar yoki muammolar bo'yicha admin:</i> @A_Husanboyev`
+👨‍💻 <b>Admin / Bog'lanish:</b> @A_Husanboyev`
   },
   ru: {
-    welcome: "👋 Здравствуйте! Добро пожаловать в официальный платежный бот UstaGo PRO.\n\nВыберите один из тарифов:\n\n👨‍💻 Техподдержка и Админ: @A_Husanboyev",
+    welcome: "👋 Здравствуйте! Добро пожаловать в официальный платежный бот UstaGo PRO.\n\nВыберите тариф:\n\n👨‍💻 Админ / Связь: @A_Husanboyev",
     plans: {
       '1m': '1 Месяц PRO (1 000 UZS)',
       '3m': '3 Месяца PRO (+1 мес бонус) (1 000 UZS)',
       '6m': '6 Месяцев PRO (+2 мес бонус) (1 000 UZS)',
       'life': '👑 Пожизненный PRO (1 000 UZS)'
     },
-    payment_info: (planLabel, amount) => `📦 Выбранный тариф: <b>${planLabel}</b>
-
-💳 <b>ДЕТАЛИ ОПЛАТЫ:</b>
-• <b>Номер карты:</b> <code>5614 6887 1438 0671</code> (Владелец: Исм M.S)
-• <b>Сумма к оплате:</b> <b>${amount} UZS</b>
+    payment_info: (planLabel, amount) => `📦 <b>Выбранный тариф:</b> ${planLabel}
+💰 <b>Сумма к оплате:</b> ${amount} UZS
+💳 <b>Номер карты:</b> <code>5614 6887 1438 0671</code> (M.S)
 
 ℹ️ <b>Способы оплаты:</b>
-Вы можете оплатить через <b>Click</b>, <b>Payme</b>, <b>Uzum Bank</b> или любое мобильное банковское приложение.
+Вы можете оплатить через <b>Click</b>, <b>Payme</b>, <b>Uzum Bank</b> или другие банковские приложения.
 
-⚠️ <b>ВАЖНО:</b>
-После оплаты отправьте <b>скриншот чека</b> прямо в этот бот. Подождите <b>5-10 минут</b>, наши администраторы проверят платеж и быстро активируют ваш PRO статус!
+⚠️ <b>ВНИМАНИЕ:</b>
+После оплаты отправьте скриншот чека прямо в этот бот 📸.
+Подождите <b>5-10 минут</b>, наши администраторы проверят и подтвердят ваш PRO статус.
 
-💬 <i>По вопросам и поддержке админ:</i> @A_Husanboyev`
+👨‍💻 <b>Админ / Связь:</b> @A_Husanboyev`
   },
   en: {
-    welcome: "👋 Hello! Welcome to UstaGo PRO official payment bot.\n\nChoose a plan:\n\n👨‍💻 Technical support & Admin: @A_Husanboyev",
+    welcome: "👋 Hello! Welcome to UstaGo PRO official payment bot.\n\nChoose a plan:\n\n👨‍💻 Admin / Contact: @A_Husanboyev",
     plans: {
       '1m': '1 Month PRO (1 000 UZS)',
       '3m': '3 Months PRO (+1 mo bonus) (1 000 UZS)',
       '6m': '6 Months PRO (+2 mo bonus) (1 000 UZS)',
       'life': '👑 Lifetime PRO (1 000 UZS)'
     },
-    payment_info: (planLabel, amount) => `📦 Selected plan: <b>${planLabel}</b>
-
-💳 <b>PAYMENT DETAILS:</b>
-• <b>Card number:</b> <code>5614 6887 1438 0671</code> (Cardholder: Ism M.S)
-• <b>Payment amount:</b> <b>${amount} UZS</b>
+    payment_info: (planLabel, amount) => `📦 <b>Selected plan:</b> ${planLabel}
+💰 <b>Payment amount:</b> ${amount} UZS
+💳 <b>Card number:</b> <code>5614 6887 1438 0671</code> (M.S)
 
 ℹ️ <b>Payment methods:</b>
-You can complete payment via <b>Click</b>, <b>Payme</b>, <b>Uzum Bank</b> or any mobile banking app.
+You can pay via <b>Click</b>, <b>Payme</b>, <b>Uzum Bank</b> or other payment apps.
 
-⚠️ <b>IMPORTANT:</b>
-After payment, send the <b>screenshot of the receipt</b> directly to this bot. Wait <b>5-10 minutes</b>, our admins will verify your payment and activate your PRO status quickly!
+⚠️ <b>ATTENTION:</b>
+After payment, send the screenshot of the receipt right here 📸.
+Wait <b>5-10 minutes</b>, our admins will verify and confirm your PRO status.
 
-💬 <i>Questions or support admin:</i> @A_Husanboyev`
+👨‍💻 <b>Admin / Contact:</b> @A_Husanboyev`
   }
 };
 
@@ -108,8 +105,15 @@ bot.start((ctx) => {
     lang: 'uz',
     plan: selectedPlan,
     userId: targetUserId,
-    step: 'choose_lang'
+    step: payload ? 'awaiting_receipt' : 'choose_lang'
   });
+
+  // Agar saytdan pay_ parametri bilan kirgan bo'lsa, to'g'ridan-to'g'ri to'lov ko'rsatmasini chiqarish
+  if (payload) {
+    const details = PLAN_DETAILS[selectedPlan] || PLAN_DETAILS['1m'];
+    const t = texts['uz'];
+    return ctx.reply(t.payment_info(details.label, details.amount), { parse_mode: 'HTML' });
+  }
 
   return ctx.reply("Tilni tanlang / Выберите язык / Choose language:", 
     Markup.inlineKeyboard([
@@ -128,8 +132,7 @@ Quyidagi buyruqlardan foydalanishingiz mumkin:
 /start - Botni qayta ishga tushirish va tariflarni tanlash
 /help - Texnik yordam va ko'rsatmalar
 
-👨‍💻 <b>Texnik yordam va Admin:</b> @A_Husanboyev
-💬 <i>Savollar yoki muammolar bo'yicha admin:</i> @A_Husanboyev`;
+👨‍💻 <b>Admin / Bog'lanish:</b> @A_Husanboyev`;
 
   return ctx.reply(helpMsg, { parse_mode: 'HTML' });
 });
@@ -189,8 +192,8 @@ bot.on('photo', async (ctx) => {
   });
 
   const replyMsg = session?.lang === 'ru' 
-    ? "✅ Чек принят! Подождите 5-10 минут для подтверждения администратора.\n\n💬 Админ: @A_Husanboyev"
-    : (session?.lang === 'en' ? "✅ Receipt received! Please wait 5-10 minutes for admin approval.\n\n💬 Admin: @A_Husanboyev" : "✅ Chek qabul qilindi! Adminlarimiz 5-10 daqiqa ichida tekshirib tasdiqlab berishadi.\n\n💬 Admin: @A_Husanboyev");
+    ? "✅ Скриншот чека принят! Наши администраторы проверят его в течение 5-10 минут.\n\n👨‍💻 Админ: @A_Husanboyev"
+    : (session?.lang === 'en' ? "✅ Receipt screenshot received! Our admins will verify it within 5-10 minutes.\n\n👨‍💻 Admin: @A_Husanboyev" : "✅ Chek rasmi qabul qilindi! Adminlarimiz 5-10 daqiqa ichida tekshirib PRO maqomingizni tasdiqlaydi.\n\n👨‍💻 Admin / Bog'lanish: @A_Husanboyev");
 
   return ctx.reply(replyMsg);
 });
@@ -238,7 +241,7 @@ bot.action(/approve_(.+)_(.+)_(.+)/, async (ctx) => {
 
   // Ustaga xabar yuborish
   try {
-    const msg = `✅ <b>To'lovingiz tasdiqlandi! UstaGo PRO versiya faollashdi.</b>\n\n📦 Tanlangan tarif: <b>${planLabel}</b>\n\nSaytga kirib sahifani yangilang (refresh).\n\n<i>Eslatma: Obunangiz tugashiga 5 kun qolganida sizga avtomatik eslatma xabari yuboramiz.</i>\n\n💬 <i>Texnik yordam va Admin:</i> @A_Husanboyev`;
+    const msg = `✅ <b>To'lovingiz tasdiqlandi! UstaGo PRO versiya faollashdi.</b>\n\n📦 Tanlangan tarif: <b>${planLabel}</b>\n\nSaytga kirib sahifani yangilang (refresh).\n\n<i>Eslatma: Obunangiz tugashiga 5 kun qolganida sizga avtomatik eslatma xabari yuboramiz.</i>\n\n👨‍💻 <i>Admin / Bog'lanish:</i> @A_Husanboyev`;
     await ctx.telegram.sendMessage(userTgId, msg, { parse_mode: 'HTML' });
   } catch (e) {
     console.error("User Telegram send error:", e);
@@ -285,7 +288,7 @@ bot.action(/reject_(.+)_(.+)/, async (ctx) => {
   const [_, ustaId, userTgId] = ctx.match;
 
   try {
-    await ctx.telegram.sendMessage(userTgId, "❌ To'lov cheki tasdiqlanmadi. Savollar yoki muammolar bo'lsa adminga murojaat qiling: @A_Husanboyev");
+    await ctx.telegram.sendMessage(userTgId, "❌ To'lov cheki tasdiqlanmadi. Savollar bo'lsa adminga murojaat qiling: @A_Husanboyev");
   } catch (e) {}
 
   return ctx.editMessageCaption(ctx.callbackQuery.message.caption + "\n\n<b>❌ ADMIN TOMONIDAN RAD ETILDI!</b>", { parse_mode: 'HTML' });
@@ -310,7 +313,7 @@ bot.launch()
     // Set bot commands menu
     bot.telegram.setMyCommands([
       { command: 'start', description: 'Botni ishga tushirish va tarif tanlash' },
-      { command: 'help', description: 'Texnik yordam va Admin: @A_Husanboyev' }
+      { command: 'help', description: 'Admin / Bog\'lanish: @A_Husanboyev' }
     ]).catch(() => {});
   })
   .catch((err) => console.error('Botni ishga tushirishda xatolik:', err));
