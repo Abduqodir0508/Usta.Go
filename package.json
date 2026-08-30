@@ -2,11 +2,15 @@
   "name": "usta.go",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "dev": "next dev --turbopack",
     "dev:bot": "node bot/index.js",
     "build": "next build",
     "start": "next start",
+    "start:bot": "node bot/index.js",
     "lint": "next lint",
     "bot": "node bot/index.js",
     "start:pm2": "pm2 start ecosystem.config.js",

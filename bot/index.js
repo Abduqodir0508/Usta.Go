@@ -329,6 +329,19 @@ process.on('unhandledRejection', (reason, promise) => {
   console.error('[Unhandled Rejection] Reason:', reason);
 });
 
+// Render.com Web Service Health Check Server (24/7 ishlashi uchun)
+const http = require('http');
+const PORT = process.env.PORT || 3000;
+
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
+  res.end('🤖 UstaGo PRO Telegram Bot status: 24/7 Active!');
+});
+
+server.listen(PORT, () => {
+  console.log(`[Render Web Service] Health check server running on port ${PORT}`);
+});
+
 bot.launch()
   .then(() => {
     console.log('UstaGo PRO Bot muvaffaqiyatli ishga tushdi!');
@@ -340,5 +353,12 @@ bot.launch()
   })
   .catch((err) => console.error('Botni ishga tushirishda xatolik:', err));
 
-process.once('SIGINT', () => bot.stop('SIGINT'));
-process.once('SIGTERM', () => bot.stop('SIGTERM'));
+process.once('SIGINT', () => {
+  server.close();
+  bot.stop('SIGINT');
+});
+
+process.once('SIGTERM', () => {
+  server.close();
+  bot.stop('SIGTERM');
+});
