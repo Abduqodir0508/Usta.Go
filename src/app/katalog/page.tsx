@@ -29,6 +29,7 @@ export default function SearchPage() {
         .select('*')
         .eq('is_banned', false)
         .order('is_pro', { ascending: false })
+        .order('rating', { ascending: false })
         .order('id', { ascending: false });
 
       if (data && !error) {

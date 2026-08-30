@@ -29,8 +29,8 @@ export default function ReytingPage() {
           .from("ustalar")
           .select("*")
           .eq("is_banned", false)
-          .order("rating", { ascending: false })
-          .order("is_pro", { ascending: false });
+          .order("is_pro", { ascending: false })
+          .order("rating", { ascending: false });
 
         if (data && !error) {
           setMasters(data);

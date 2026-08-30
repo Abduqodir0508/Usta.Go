@@ -29,10 +29,10 @@ export function TopNavbar() {
     if (user) {
       setSession({ type: 'master', name: user.name, id: String(user.id), is_pro: !!user.is_pro });
 
-      // Check if user is PRO and pro_modal_shown is false or not celebrated in localStorage
+      // Check if user is PRO and show_congrats_modal is true or not celebrated in localStorage
       if (user.is_pro) {
         const celebrated = localStorage.getItem(`pro_celebrated_${user.id}`);
-        if (!celebrated && user.pro_modal_shown !== true) {
+        if (user.show_congrats_modal === true || (!celebrated && user.pro_modal_shown !== true)) {
           setIsProSuccessOpen(true);
         }
       }

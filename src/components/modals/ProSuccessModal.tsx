@@ -34,10 +34,19 @@ export function ProSuccessModal({ isOpen, onClose, user }: ProSuccessModalProps)
 
   const handleDismiss = async () => {
     try {
-      if (user.id) {
+      if (user?.id) {
         localStorage.setItem(`pro_celebrated_${user.id}`, "true");
-        await supabase.from("ustalar").update({ pro_modal_shown: true }).eq("id", user.id);
-        await supabase.from("profiles").update({ pro_modal_shown: true }).eq("id", user.id);
+        const updateObj = { show_congrats_modal: false, pro_modal_shown: true };
+        
+        try {
+          await supabase.from("ustalar").update(updateObj).eq("id", user.id);
+        } catch (e) {}
+        try {
+          await supabase.from("profiles").update(updateObj).eq("id", user.id);
+        } catch (e) {}
+        try {
+          await supabase.from("users").update(updateObj).eq("id", user.id);
+        } catch (e) {}
       }
     } catch (e) {
       console.error("Pro modal update error:", e);

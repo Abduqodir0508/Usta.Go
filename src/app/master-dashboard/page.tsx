@@ -309,7 +309,20 @@ export default function Dashboard() {
             <div>
               <h2 className="text-lg font-bold text-foreground mb-4">{t.dashboard?.profilePreview || "Profil ko'rinishi (Mijozlar uchun)"}</h2>
               <div className="bg-background border border-border-color rounded-2xl overflow-hidden max-w-sm shadow-sm relative">
-                <div className="h-20 bg-gradient-to-r from-stone-800 to-stone-900"></div>
+                <div className={cn(
+                  "h-24 relative transition-all duration-300 overflow-hidden",
+                  currentMaster?.banner_color || "bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700"
+                )}>
+                  {currentMaster?.banner_url && (
+                    <img src={currentMaster.banner_url} alt="Banner" className="w-full h-full object-cover" />
+                  )}
+                  {currentMaster?.is_pro && (
+                    <div className="absolute top-2 right-2 bg-black/40 backdrop-blur-sm text-amber-400 text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-amber-500/30 flex items-center gap-1">
+                      <VerifiedBadge className="w-3 h-3 text-blue-400" />
+                      <span>PRO BANNER</span>
+                    </div>
+                  )}
+                </div>
                 <div className="px-5 pb-5">
                   <div className="flex justify-between items-start -mt-10 mb-3">
                     <div className="relative group">
@@ -320,7 +333,7 @@ export default function Dashboard() {
                         className="absolute inset-0 opacity-0 cursor-pointer z-10 w-20 h-20 rounded-full" 
                         title="Rasmni o'zgartirish"
                       />
-                      <div className="w-20 h-20 rounded-full border-4 border-background bg-surface flex items-center justify-center overflow-hidden relative">
+                      <div className="w-20 h-20 rounded-full border-4 border-background bg-surface flex items-center justify-center overflow-hidden relative shadow-md">
                         {currentMaster?.avatar_url ? (
                           <img src={currentMaster.avatar_url} alt={currentMaster?.name} className="w-full h-full object-cover group-hover:opacity-70 transition-opacity" />
                         ) : (
@@ -340,9 +353,7 @@ export default function Dashboard() {
                     <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
                       {currentMaster?.name || "Ism familiya"}
                       {currentMaster?.is_pro && (
-                        <span title="Tasdiqlangan PRO usta" className="flex items-center">
-                          <CheckCircle2 className="w-5 h-5 text-blue-500 fill-blue-500/20" />
-                        </span>
+                        <VerifiedBadge className="w-5 h-5" />
                       )}
                     </h3>
                     <p className="text-amber-500 font-medium text-sm">{currentMaster?.category || "Mutaxassislik"}</p>
@@ -355,6 +366,112 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Banner Sozlamalari (PRO Usta uchun) */}
+            <div className="bg-surface border border-border-color rounded-2xl p-5 md:p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+                  <ImageIcon className="w-5 h-5 text-amber-500" />
+                  <span>Profil Banneri va Fon Ranglari</span>
+                </h3>
+                {currentMaster?.is_pro ? (
+                  <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">
+                    PRO Faol ✨
+                  </span>
+                ) : (
+                  <span className="bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase flex items-center gap-1">
+                    <Lock className="w-3 h-3" /> PRO Imkoniyat
+                  </span>
+                )}
+              </div>
+
+              {currentMaster?.is_pro ? (
+                <div className="space-y-4">
+                  <p className="text-xs text-muted-foreground">
+                    Profilingiz tepasidagi banner rangini tanlang yoki rasm havolasini (URL) kiriting:
+                  </p>
+                  
+                  {/* Preset Gradients */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {[
+                      { name: "Oltin / Qizil", class: "bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700" },
+                      { name: "Ko'k / Siyohrang", class: "bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700" },
+                      { name: "Zumrad / Yashil", class: "bg-gradient-to-r from-emerald-600 via-teal-600 to-green-700" },
+                      { name: "Tungi Premium", class: "bg-gradient-to-r from-zinc-800 via-stone-900 to-black" },
+                    ].map((preset, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={async () => {
+                          const updated = { ...currentMaster, banner_color: preset.class, banner_url: null };
+                          setCurrentMaster(updated);
+                          localStorage.setItem("usta_current_master", JSON.stringify(updated));
+                          window.dispatchEvent(new Event("storage"));
+                          if (currentMaster?.id) {
+                            await supabase.from("ustalar").update({ banner_color: preset.class, banner_url: null }).eq("id", currentMaster.id);
+                            await supabase.from("profiles").update({ banner_color: preset.class, banner_url: null }).eq("id", currentMaster.id);
+                          }
+                        }}
+                        className={cn(
+                          "h-12 rounded-xl p-2 text-[11px] font-bold text-white flex items-center justify-center text-center shadow-sm border border-white/10 transition-transform hover:scale-105 cursor-pointer",
+                          preset.class
+                        )}
+                      >
+                        {preset.name}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Banner Image URL Input */}
+                  <div className="pt-2">
+                    <label className="block text-xs font-semibold text-muted-foreground mb-1">
+                      Custom Banner Rasm URL (Ixtiyoriy)
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        placeholder="https://example.com/banner.jpg"
+                        value={currentMaster?.banner_url || ""}
+                        onChange={(e) => {
+                          const url = e.target.value;
+                          setCurrentMaster((prev: any) => ({ ...prev, banner_url: url }));
+                        }}
+                        className="flex-1 px-3.5 py-2 bg-background border border-border-color rounded-xl text-xs text-foreground outline-none focus:border-amber-500"
+                      />
+                      <button
+                        onClick={async () => {
+                          if (!currentMaster?.id) return;
+                          try {
+                            await supabase.from("ustalar").update({ banner_url: currentMaster.banner_url || null }).eq("id", currentMaster.id);
+                            await supabase.from("profiles").update({ banner_url: currentMaster.banner_url || null }).eq("id", currentMaster.id);
+                            localStorage.setItem("usta_current_master", JSON.stringify(currentMaster));
+                            window.dispatchEvent(new Event("storage"));
+                            alert("Banner rasm URL saqlandi!");
+                          } catch (e) {
+                            alert("Saqlashda xatolik!");
+                          }
+                        }}
+                        className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                      >
+                        Saqlash
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-background/60 p-4 rounded-xl border border-dashed border-amber-500/30 text-center space-y-2">
+                  <p className="text-xs text-stone-400">
+                    PRO usta bo'ling va profilingiz banner rangi hamda rasmini brendingizga mos ravishda erkin o'zgartiring!
+                  </p>
+                  <button
+                    onClick={() => setIsPricingModalOpen(true)}
+                    className="text-xs font-bold text-amber-500 hover:underline cursor-pointer"
+                  >
+                    ⭐ PRO versiyaga o'tish →
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Read-only Name/Phone & Editable Bio Form (Talab 3) */}
@@ -594,46 +711,123 @@ export default function Dashboard() {
         {/* PORTFOLIO TAB */}
         {activeTab === "portfolio" && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-foreground">Bajargan ishlar rasmlari</h2>
-            </div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="aspect-square rounded-2xl border-2 border-dashed border-border-color bg-background flex flex-col items-center justify-center text-muted-foreground hover:text-amber-500 hover:border-amber-500 transition-colors group relative cursor-pointer">
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={handleUploadImage} 
-                  disabled={isUploading}
-                  className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed" 
-                />
-                {isUploading ? (
-                  <div className="flex flex-col items-center">
-                    <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-2"></div>
-                    <span className="text-sm font-medium">Yuklanmoqda...</span>
+            {(() => {
+              const maxImages = currentMaster?.is_pro ? 15 : 5;
+              const isLimitReached = portfolioImages.length >= maxImages;
+              const isFreeLimit = !currentMaster?.is_pro && portfolioImages.length >= 5;
+
+              return (
+                <>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border-color pb-4">
+                    <div>
+                      <h2 className="text-lg font-bold text-foreground">
+                        Bajargan ishlar rasmlari (Portfolio)
+                      </h2>
+                      <p className="text-xs text-muted-foreground">
+                        Mijozlarga bajargan ishlaringiz sifatini ko'rsating.
+                      </p>
+                    </div>
+
+                    {/* Counter Badge */}
+                    <div className="flex items-center gap-2">
+                      <span className={cn(
+                        "px-3 py-1 rounded-full text-xs font-bold border",
+                        isLimitReached
+                          ? "bg-red-500/10 text-red-500 border-red-500/20"
+                          : currentMaster?.is_pro
+                          ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                          : "bg-surface-hover text-foreground border-border-color"
+                      )}>
+                        {portfolioImages.length} / {maxImages} rasm
+                      </span>
+                      {currentMaster?.is_pro ? (
+                        <span className="bg-orange-500/20 text-orange-500 text-[10px] font-extrabold px-2 py-0.5 rounded-md uppercase">
+                          PRO (Max 15)
+                        </span>
+                      ) : (
+                        <span className="bg-stone-500/20 text-stone-400 text-[10px] font-semibold px-2 py-0.5 rounded-md">
+                          Oddiy (Max 5)
+                        </span>
+                      )}
+                    </div>
                   </div>
-                ) : (
-                  <>
-                    <UploadCloud className="w-8 h-8 mb-2 group-hover:scale-110 transition-transform" />
-                    <span className="text-sm font-medium">Rasm yuklash</span>
-                  </>
-                )}
-              </div>
-              
-              {portfolioImages.map((url, i) => (
-                <div key={i} className="aspect-square rounded-2xl bg-background relative group overflow-hidden border border-border-color">
-                  <img src={url} alt={`Portfolio ${i+1}`} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <button 
-                      onClick={() => handleDeleteImage(url)}
-                      className="bg-surface/90 text-red-500 p-2 rounded-full hover:bg-surface hover:text-red-600 transition-colors shadow-lg"
-                    >
-                      <XCircle className="w-6 h-6" />
-                    </button>
+
+                  {/* PRO Upgrade Offer Banner for Free Users at Limit */}
+                  {isFreeLimit && (
+                    <div className="bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border border-amber-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-md">
+                      <div className="space-y-1">
+                        <h4 className="font-bold text-amber-400 text-sm sm:text-base flex items-center gap-2">
+                          ⭐ Ko'proq (15 tagacha) rasm yuklash uchun PRO versiyaga o'ting!
+                        </h4>
+                        <p className="text-xs text-stone-300">
+                          PRO ustalar portfoliosiga 15 tagacha rasm yuklay oladi va qidiruvda TOP 1-o'rinda ko'rinadi.
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setIsPricingModalOpen(true)}
+                        className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-lg shadow-orange-500/20 transition-all shrink-0 cursor-pointer"
+                      >
+                        PRO Tarifga O'tish →
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {/* Upload Box */}
+                    <div className={cn(
+                      "aspect-square rounded-2xl border-2 border-dashed transition-colors group relative flex flex-col items-center justify-center p-3 text-center",
+                      isLimitReached || isUploading
+                        ? "border-stone-700/50 bg-stone-900/30 text-stone-600 cursor-not-allowed"
+                        : "border-border-color bg-background text-muted-foreground hover:text-amber-500 hover:border-amber-500 cursor-pointer"
+                    )}>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={handleUploadImage} 
+                        disabled={isUploading || isLimitReached}
+                        className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed" 
+                      />
+                      {isUploading ? (
+                        <div className="flex flex-col items-center">
+                          <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-2"></div>
+                          <span className="text-xs font-medium">Yuklanmoqda...</span>
+                        </div>
+                      ) : isLimitReached ? (
+                        <div className="flex flex-col items-center space-y-1">
+                          <Lock className="w-8 h-8 text-stone-600 mb-1" />
+                          <span className="text-xs font-bold text-stone-500">Limitga yetdi ({maxImages}/{maxImages})</span>
+                          {!currentMaster?.is_pro && (
+                            <span className="text-[10px] text-amber-500 font-semibold underline">PRO'ga o'ting</span>
+                          )}
+                        </div>
+                      ) : (
+                        <>
+                          <UploadCloud className="w-8 h-8 mb-2 group-hover:scale-110 transition-transform text-amber-500" />
+                          <span className="text-xs font-bold text-foreground">Rasm yuklash</span>
+                          <span className="text-[10px] text-stone-400 mt-0.5">({portfolioImages.length}/{maxImages})</span>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Portfolio Images List */}
+                    {portfolioImages.map((url, i) => (
+                      <div key={i} className="aspect-square rounded-2xl bg-background relative group overflow-hidden border border-border-color shadow-sm">
+                        <img src={url} alt={`Portfolio ${i+1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <button 
+                            onClick={() => handleDeleteImage(url)}
+                            className="bg-red-500 text-white p-2.5 rounded-full hover:bg-red-600 transition-colors shadow-lg"
+                            title="Rasmni o'chirish"
+                          >
+                            <XCircle className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </div>
-              ))}
-            </div>
+                </>
+              );
+            })()}
           </div>
         )}
 

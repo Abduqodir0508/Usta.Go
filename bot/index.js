@@ -202,44 +202,66 @@ bot.on('photo', async (ctx) => {
 bot.action(/approve_(.+)_(.+)_(.+)/, async (ctx) => {
   const [_, ustaId, plan, userTgId] = ctx.match;
 
-  // Muddatni hisoblash
+  // Plan nomini normallashtirish
+  let normalizedPlan = '1_month';
   let expiresAt = new Date();
-  let daysCount = 30;
   let planLabel = "1 oylik";
 
-  if (plan === '1m' || plan === '1_oylik') {
+  if (plan === '1m' || plan === '1_oylik' || plan === '1_month') {
+    normalizedPlan = '1_month';
     expiresAt.setMonth(expiresAt.getMonth() + 1);
-    daysCount = 30;
     planLabel = "1 oylik";
-  } else if (plan === '3m' || plan === '3_oylik') {
+  } else if (plan === '3m' || plan === '3_oylik' || plan === '3_months') {
+    normalizedPlan = '3_months';
     expiresAt.setMonth(expiresAt.getMonth() + 4);
-    daysCount = 120;
     planLabel = "3 oylik (+1 oy bonus)";
-  } else if (plan === '6m' || plan === '6_oylik') {
+  } else if (plan === '6m' || plan === '6_oylik' || plan === '6_months') {
+    normalizedPlan = '6_months';
     expiresAt.setMonth(expiresAt.getMonth() + 8);
-    daysCount = 240;
     planLabel = "6 oylik (+2 oy bonus)";
   } else if (plan === 'life' || plan === 'lifetime') {
+    normalizedPlan = 'lifetime';
     expiresAt = new Date('2099-01-01T00:00:00Z');
-    daysCount = 36500;
     planLabel = "Umrbod (Lifetime)";
   }
 
-  // Supabase'da yangilash
+  const nowIso = new Date().toISOString();
+
+  // Supabase ma'lumotlarini yangilash (Talab 3)
   if (ustaId && ustaId !== "Noma'lum / Saytdan kirmagan") {
     const updateData = {
       is_pro: true,
       is_verified: true,
-      pro_plan: plan,
+      pro_plan: normalizedPlan,
+      pro_started_at: nowIso,
+      pro_activated_at: nowIso,
       pro_expires_at: expiresAt.toISOString(),
-      pro_activated_at: new Date().toISOString(),
+      max_portfolio: 15,
+      banner_customization: true,
+      show_congrats_modal: true,
       pro_modal_shown: false
     };
-    await supabase.from('ustalar').update(updateData).eq('id', ustaId);
-    await supabase.from('profiles').update(updateData).eq('id', ustaId);
+
+    try {
+      await supabase.from('ustalar').update(updateData).eq('id', ustaId);
+    } catch (e) {
+      console.error("Error updating ustalar table:", e);
+    }
+
+    try {
+      await supabase.from('profiles').update(updateData).eq('id', ustaId);
+    } catch (e) {
+      console.error("Error updating profiles table:", e);
+    }
+
+    try {
+      await supabase.from('users').update(updateData).eq('id', ustaId);
+    } catch (e) {
+      console.error("Error updating users table:", e);
+    }
   }
 
-  // Ustaga xabar yuborish
+  // Ustaga xabar yuborish (Talab 3)
   try {
     const msg = `✅ <b>To'lovingiz tasdiqlandi! UstaGo PRO versiya faollashdi.</b>\n\n📦 Tanlangan tarif: <b>${planLabel}</b>\n\nSaytga kirib sahifani yangilang (refresh).\n\n<i>Eslatma: Obunangiz tugashiga 5 kun qolganida sizga avtomatik eslatma xabari yuboramiz.</i>\n\n👨‍💻 <i>Admin / Bog'lanish:</i> @A_Husanboyev`;
     await ctx.telegram.sendMessage(userTgId, msg, { parse_mode: 'HTML' });
