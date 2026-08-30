@@ -36,7 +36,7 @@ export default function Dashboard() {
         if (localMaster.id) {
           const { data, error } = await supabase.from('ustalar').select('*').eq('id', localMaster.id).single();
           if (data && !error) {
-            const updatedData = await downgradeMasterIfExpired(data);
+            const updatedData: any = await downgradeMasterIfExpired(data);
             setCurrentMaster(updatedData);
             setPortfolioImages(updatedData.portfolio || []);
             localStorage.setItem("usta_current_master", JSON.stringify(updatedData));

@@ -330,7 +330,7 @@ export function subscribeToPendingRequests(onRequestsChange) {
 /**
  * 8. PRO Obuna muddati tugagan bo'lsa avtomatik Free tarifga tushirish (Downgrade)
  * @param {Object} master - Usta obyekti
- * @returns {Promise<Object>} Yangilangan usta obyekti
+ * @returns {Promise<any>} Yangilangan usta obyekti
  */
 export async function downgradeMasterIfExpired(master) {
   if (!master || !master.is_pro || !master.pro_expires_at) return master;

@@ -28,44 +28,40 @@ export function useAuth() {
       try {
         const stored = typeof window !== "undefined" ? localStorage.getItem("usta_current_master") : null;
         if (stored) {
-          let parsed: UserProfile | null = null;
+          let parsedData: any = null;
           try {
-            parsed = JSON.parse(stored);
+            parsedData = JSON.parse(stored);
           } catch (e) {
-            parsed = null;
+            parsedData = null;
           }
 
-          if (parsed) {
-            // Check if local data is expired safely
-            parsed = await downgradeMasterIfExpired(parsed);
-            if (isMounted) setUser(parsed);
+          if (parsedData && parsedData.id) {
+            const userObj: UserProfile = await downgradeMasterIfExpired(parsedData);
+            if (isMounted) setUser(userObj);
 
-            if (parsed.id) {
-              // Try fetching fresh data from Supabase (String ID)
-              let dbData: UserProfile | null = null;
-              const { data: d1 } = await supabase
+            // Fetch fresh data from Supabase
+            let dbData: any = null;
+            const { data: d1 } = await supabase
+              .from("ustalar")
+              .select("*")
+              .eq("id", userObj.id)
+              .maybeSingle();
+
+            dbData = d1;
+
+            if (!dbData && !isNaN(Number(userObj.id))) {
+              const { data: d2 } = await supabase
                 .from("ustalar")
                 .select("*")
-                .eq("id", parsed.id)
+                .eq("id", Number(userObj.id))
                 .maybeSingle();
+              dbData = d2;
+            }
 
-              dbData = d1;
-
-              // Fallback for Numeric ID if initial fetch returned null
-              if (!dbData && !isNaN(Number(parsed.id))) {
-                const { data: d2 } = await supabase
-                  .from("ustalar")
-                  .select("*")
-                  .eq("id", Number(parsed.id))
-                  .maybeSingle();
-                dbData = d2;
-              }
-
-              if (dbData && isMounted) {
-                const updatedData = await downgradeMasterIfExpired(dbData);
-                setUser(updatedData);
-                localStorage.setItem("usta_current_master", JSON.stringify(updatedData));
-              }
+            if (dbData && isMounted) {
+              const updatedData: UserProfile = await downgradeMasterIfExpired(dbData);
+              setUser(updatedData);
+              localStorage.setItem("usta_current_master", JSON.stringify(updatedData));
             }
           }
         } else {
@@ -110,9 +106,10 @@ export function useAuth() {
         async (payload) => {
           if (payload.new) {
             console.log("Realtime status updated:", payload.new);
-            const freshData = await downgradeMasterIfExpired(payload.new as UserProfile);
+            const freshData: any = await downgradeMasterIfExpired(payload.new);
             setUser((prev) => {
-              const updated: UserProfile = { ...(prev || {}), ...freshData };
+              if (!prev) return (freshData as UserProfile) || null;
+              const updated: UserProfile = { ...prev, ...freshData };
               localStorage.setItem("usta_current_master", JSON.stringify(updated));
               return updated;
             });
