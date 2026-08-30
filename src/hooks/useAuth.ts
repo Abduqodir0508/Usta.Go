@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
+import { downgradeMasterIfExpired } from "@/lib/proService";
+
 export interface UserProfile {
   id: string | number;
   name: string;
@@ -25,7 +27,10 @@ export function useAuth() {
       try {
         const localMaster = localStorage.getItem("usta_current_master");
         if (localMaster) {
-          const parsed = JSON.parse(localMaster);
+          let parsed = JSON.parse(localMaster);
+
+          // Check if local data is expired
+          parsed = await downgradeMasterIfExpired(parsed);
           setUser(parsed);
 
           if (parsed.id) {
@@ -36,8 +41,9 @@ export function useAuth() {
               .maybeSingle();
 
             if (dbData) {
-              setUser(dbData);
-              localStorage.setItem("usta_current_master", JSON.stringify(dbData));
+              const updatedData = await downgradeMasterIfExpired(dbData);
+              setUser(updatedData);
+              localStorage.setItem("usta_current_master", JSON.stringify(updatedData));
             }
           }
         }

@@ -289,12 +289,26 @@ export default function Home() {
             <p className="text-stone-400 mb-6">
               {t.proPricing?.subtitle || "UstaGo PRO orqali buyurtmalaringizni 5 barobarga oshiring"}
             </p>
-            <ul className="space-y-3 mb-8">
-              <li className="flex items-center gap-3 text-stone-300 font-medium">
-                <CheckCircle2 className="w-5 h-5 text-orange-500" /> {t.proPricing?.feature1 || "Katalogda doim 1-o'rinda turish"}
+            <ul className="space-y-2.5 mb-8">
+              <li className="flex items-start gap-3 text-stone-200 font-medium text-sm md:text-base">
+                <CheckCircle2 className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
+                <span>Katalog va qidiruvda doim TOP (1-o'rinda) turish</span>
               </li>
-              <li className="flex items-center gap-3 text-stone-300 font-medium">
-                <CheckCircle2 className="w-5 h-5 text-orange-500" /> {t.proPricing?.feature2 || "Profil yonida moviy galochka"}
+              <li className="flex items-start gap-3 text-stone-200 font-medium text-sm md:text-base">
+                <CheckCircle2 className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
+                <span>Profil yonida rasmiy moviy galochka (VIP ishonch belgisi)</span>
+              </li>
+              <li className="flex items-start gap-3 text-stone-200 font-medium text-sm md:text-base">
+                <CheckCircle2 className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
+                <span>15 tagacha portfolio rasmlari yuklash imkoniyati</span>
+              </li>
+              <li className="flex items-start gap-3 text-stone-200 font-medium text-sm md:text-base">
+                <CheckCircle2 className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
+                <span>AI Maslahatchi qidiruvida mijozlarga birinchi tavsiya etilish</span>
+              </li>
+              <li className="flex items-start gap-3 text-stone-200 font-medium text-sm md:text-base">
+                <CheckCircle2 className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
+                <span>Profil foni va banner ranglarini erkin moslashtirish</span>
               </li>
             </ul>
             <button 

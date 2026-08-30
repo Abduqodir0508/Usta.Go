@@ -326,3 +326,103 @@ export function subscribeToPendingRequests(onRequestsChange) {
     supabase.removeChannel(channel);
   };
 }
+
+/**
+ * 8. PRO Obuna muddati tugagan bo'lsa avtomatik Free tarifga tushirish (Downgrade)
+ * @param {Object} master - Usta obyekti
+ * @returns {Promise<Object>} Yangilangan usta obyekti
+ */
+export async function downgradeMasterIfExpired(master) {
+  if (!master || !master.is_pro) return master;
+
+  if (master.pro_expires_at) {
+    // Umrbod (lifetime) obunalar muddati tugamaydi (2099 bilan boshlanadi)
+    if (master.pro_expires_at.startsWith('2099')) {
+      return master;
+    }
+
+    const now = new Date();
+    const expiresAt = new Date(master.pro_expires_at);
+    if (now > expiresAt) {
+      console.log(`⚠️ Usta ID ${master.id} PRO obuna muddati tugagan. Downgrade bajarilmoqda...`);
+      const downgradedData = await executeDowngrade(master.id, master.portfolio);
+      return { ...master, ...downgradedData };
+    }
+  }
+
+  return master;
+}
+
+/**
+ * 9. Ustanining PRO maqomini bekor qilish va Free tarifga o'tkazish (Revoke PRO & Downgrade)
+ * @param {string|number} masterId - Usta ID si
+ * @param {Array} currentPortfolio - Joriy portfolio rasmlari massivi
+ * @returns {Promise<Object>} Yangilangan ma'lumotlar
+ */
+export async function executeDowngrade(masterId, currentPortfolio = []) {
+  if (!masterId) return null;
+
+  let portfolioList = [];
+  if (Array.isArray(currentPortfolio)) {
+    portfolioList = currentPortfolio;
+  } else if (typeof currentPortfolio === 'string') {
+    try {
+      portfolioList = JSON.parse(currentPortfolio || '[]');
+    } catch (e) {
+      portfolioList = [];
+    }
+  }
+
+  // Portfolio rasmlarini xavfsiz qisqartirish (max 5 ta saqlanadi)
+  const trimmedPortfolio = portfolioList.slice(0, 5);
+
+  const downgradePayload = {
+    is_pro: false,
+    is_verified: false,
+    pro_plan: null,
+    pro_expires_at: null,
+    max_portfolio: 5,
+    banner_customization: false,
+    banner_color: null,
+    banner_url: null,
+    portfolio: trimmedPortfolio,
+    show_congrats_modal: false,
+    pro_modal_shown: false
+  };
+
+  try {
+    await supabase.from("ustalar").update(downgradePayload).eq("id", masterId);
+  } catch (e) {
+    console.error("Error updating ustalar table on downgrade:", e);
+  }
+
+  try {
+    await supabase.from("profiles").update(downgradePayload).eq("id", masterId);
+  } catch (e) {
+    console.error("Error updating profiles table on downgrade:", e);
+  }
+
+  try {
+    await supabase.from("users").update(downgradePayload).eq("id", masterId);
+  } catch (e) {
+    console.error("Error updating users table on downgrade:", e);
+  }
+
+  // LocalStorage'dagi ma'lumotni ham yangilash
+  if (typeof window !== "undefined") {
+    const stored = localStorage.getItem("usta_current_master");
+    if (stored) {
+      try {
+        const localMaster = JSON.parse(stored);
+        if (String(localMaster.id) === String(masterId)) {
+          const updatedLocal = { ...localMaster, ...downgradePayload };
+          localStorage.setItem("usta_current_master", JSON.stringify(updatedLocal));
+          window.dispatchEvent(new Event("storage"));
+          window.dispatchEvent(new Event("auth_changed"));
+        }
+      } catch (e) {}
+    }
+  }
+
+  return downgradePayload;
+}

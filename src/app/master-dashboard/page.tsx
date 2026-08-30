@@ -8,6 +8,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import CropModal from "@/components/modals/CropModal";
 import ProPricingModal from "@/components/modals/ProPricingModal";
 import { VerifiedBadge } from "@/components/ui/VerifiedBadge";
+import { downgradeMasterIfExpired, executeDowngrade } from "@/lib/proService";
 
 export default function Dashboard() {
   const { t } = useLanguage();
@@ -28,23 +29,14 @@ export default function Dashboard() {
     const fetchMasterData = async () => {
       const stored = localStorage.getItem("usta_current_master");
       if (stored) {
-        const localMaster = JSON.parse(stored);
-        
+        let localMaster = JSON.parse(stored);
+        localMaster = await downgradeMasterIfExpired(localMaster);
+
         // Agar Supabase da ID bo'lsa fetch qilamiz
         if (localMaster.id) {
           const { data, error } = await supabase.from('ustalar').select('*').eq('id', localMaster.id).single();
           if (data && !error) {
-            let updatedData = { ...data };
-            if (data.is_pro && data.pro_expires_at && !data.pro_expires_at.startsWith('2099')) {
-               const diff = new Date(data.pro_expires_at).getTime() - new Date().getTime();
-               const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-               if (days <= 0) {
-                 await supabase.from('ustalar').update({ is_pro: false, pro_plan: null, pro_expires_at: null }).eq('id', data.id);
-                 updatedData.is_pro = false;
-                 updatedData.pro_plan = null;
-                 updatedData.pro_expires_at = null;
-               }
-            }
+            const updatedData = await downgradeMasterIfExpired(data);
             setCurrentMaster(updatedData);
             setPortfolioImages(updatedData.portfolio || []);
             localStorage.setItem("usta_current_master", JSON.stringify(updatedData));
@@ -185,19 +177,12 @@ export default function Dashboard() {
 
   const handleCancelPro = async () => {
     if (confirm(t.proWidget?.cancelConfirm || "Rostdan ham PRO obunani bekor qilmoqchimisiz? To'langan mablag' qaytarib berilmaydi!")) {
-      
       if (currentMaster?.id) {
-        await supabase.from('ustalar').update({ 
-          is_pro: false, 
-          pro_plan: null, 
-          pro_expires_at: null 
-        }).eq('id', currentMaster.id);
+        const downgradeData = await executeDowngrade(currentMaster.id, currentMaster.portfolio);
+        const updatedMaster = { ...currentMaster, ...downgradeData };
+        setCurrentMaster(updatedMaster);
+        setPortfolioImages(updatedMaster.portfolio || []);
       }
-
-      const updatedMaster = { ...currentMaster, is_pro: false, pro_plan: null, pro_expires_at: null };
-      setCurrentMaster(updatedMaster);
-      localStorage.setItem("usta_current_master", JSON.stringify(updatedMaster));
-      window.dispatchEvent(new Event("storage"));
       alert(t.proWidget?.cancelSuccess || "PRO obunangiz bekor qilindi.");
     }
   };

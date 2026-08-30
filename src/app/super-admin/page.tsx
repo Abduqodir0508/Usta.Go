@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import CropModal from "@/components/modals/CropModal";
+import { downgradeMasterIfExpired, executeDowngrade } from "@/lib/proService";
 
 const getBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -43,7 +44,11 @@ export default function SuperAdminPage() {
       if (error) {
         console.error("Error fetching masters:", error);
       } else if (data) {
-        setMastersList(data);
+        // Auto check and downgrade expired PRO masters
+        const updatedMasters = await Promise.all(
+          data.map(async (m: any) => await downgradeMasterIfExpired(m))
+        );
+        setMastersList(updatedMasters);
       }
     };
     fetchMasters();
@@ -213,26 +218,35 @@ export default function SuperAdminPage() {
   const handleTogglePro = async (id: number, currentStatus: boolean) => {
     const newStatus = !currentStatus;
     
-    let updateData: any = { is_pro: newStatus };
     if (newStatus) {
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 30);
-      updateData.pro_plan = "Oylik PRO (Admin)";
-      updateData.pro_expires_at = expiresAt.toISOString();
-    } else {
-      updateData.pro_plan = null;
-      updateData.pro_expires_at = null;
-    }
+      const updateData = {
+        is_pro: true,
+        is_verified: true,
+        pro_plan: "1_month",
+        pro_expires_at: expiresAt.toISOString(),
+        max_portfolio: 15,
+        banner_customization: true
+      };
 
-    const { error } = await supabase
-      .from('ustalar')
-      .update(updateData)
-      .eq('id', id);
-    
-    if (!error) {
+      try {
+        await supabase.from('ustalar').update(updateData).eq('id', id);
+        await supabase.from('profiles').update(updateData).eq('id', id);
+        await supabase.from('users').update(updateData).eq('id', id);
+      } catch (e) {}
+
       setMastersList(mastersList.map(m => m.id === id ? { ...m, ...updateData } : m));
+      setToastMessage("Usta PRO statusiga o'tkazildi (+30 kun)!");
+      setTimeout(() => setToastMessage(""), 2000);
     } else {
-      alert("Statusni o'zgartirishda xatolik!");
+      if (confirm("Rostdan ham ushbu ustanining PRO statusini bekor qilib, Free tarifga tushirmoqchimisiz?")) {
+        const targetMaster = mastersList.find(m => m.id === id);
+        const downgradeData = await executeDowngrade(id, targetMaster?.portfolio);
+        setMastersList(mastersList.map(m => m.id === id ? { ...m, ...downgradeData } : m));
+        setToastMessage("Usta PRO statusi bekor qilindi (Downgrade)!");
+        setTimeout(() => setToastMessage(""), 2000);
+      }
     }
   };
 
@@ -255,7 +269,7 @@ export default function SuperAdminPage() {
               <Shield className="w-8 h-8 text-amber-500" />
               Super Admin Panel
             </h1>
-            <p className="text-stone-400 mt-1">Platformani boshqarish markazi</p>
+            <p className="text-stone-400 mt-1">Platformani boshqarish markazi va PRO obuna monitoringi</p>
           </div>
           <button 
             onClick={handleLogout}
@@ -318,7 +332,7 @@ export default function SuperAdminPage() {
                       <th className="pb-3 font-medium">Kategoriya</th>
                       <th className="pb-3 font-medium">Telefon</th>
                       <th className="pb-3 font-medium">Status</th>
-                      <th className="pb-3 font-medium text-center">PRO Status</th>
+                      <th className="pb-3 font-medium text-center">PRO Status / Qolgan muddat</th>
                       <th className="pb-3 font-medium text-right">Harakatlar</th>
                     </tr>
                   </thead>
@@ -338,29 +352,72 @@ export default function SuperAdminPage() {
                             {master.is_banned ? "Banned" : "Faol"}
                           </span>
                         </td>
+                        
+                        {/* PRO Status Monitoring & Revoke PRO Button */}
                         <td className="py-4 text-center">
-                          <div className="flex flex-col items-center gap-1">
+                          <div className="flex flex-col items-center gap-1.5">
+                            {(() => {
+                              if (master.is_pro) {
+                                let isLifetime = false;
+                                let daysLeft = 0;
+                                if (master.pro_expires_at) {
+                                  if (master.pro_expires_at.startsWith("2099")) {
+                                    isLifetime = true;
+                                  } else {
+                                    const diff = new Date(master.pro_expires_at).getTime() - new Date().getTime();
+                                    daysLeft = Math.max(1, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+                                  }
+                                }
+
+                                if (isLifetime) {
+                                  return (
+                                    <span className="px-2.5 py-1 text-xs font-extrabold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                                      👑 Umrbod PRO
+                                    </span>
+                                  );
+                                } else if (daysLeft > 5) {
+                                  return (
+                                    <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                                      PRO ({daysLeft} kun qoldi)
+                                    </span>
+                                  );
+                                } else if (daysLeft > 0) {
+                                  return (
+                                    <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 animate-pulse">
+                                      ⚠️ Tugamoqda ({daysLeft} kun)
+                                    </span>
+                                  );
+                                } else {
+                                  return (
+                                    <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-red-500/20 text-red-400 border border-red-500/30">
+                                      Muddati tugagan
+                                    </span>
+                                  );
+                                }
+                              } else {
+                                return (
+                                  <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-stone-800 text-stone-400 border border-stone-700">
+                                    Oddiy (Free)
+                                  </span>
+                                );
+                              }
+                            })()}
+
+                            {/* Revoke or Grant Button */}
                             <button
                               onClick={() => handleTogglePro(master.id, master.is_pro)}
                               className={cn(
-                                "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-                                master.is_pro ? "bg-orange-500" : "bg-stone-700"
+                                "px-3 py-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer shadow-sm mt-0.5",
+                                master.is_pro
+                                  ? "bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/30"
+                                  : "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-orange-500/20"
                               )}
                             >
-                              <span
-                                className={cn(
-                                  "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
-                                  master.is_pro ? "translate-x-6" : "translate-x-1"
-                                )}
-                              />
+                              {master.is_pro ? "PRO bekor qilish (Revoke)" : "+ PRO Berish (30d)"}
                             </button>
-                            {master.is_pro && master.pro_expires_at && (
-                              <span className="text-[10px] text-stone-400">
-                                {master.pro_expires_at.startsWith('2099') ? 'Umrbod' : `${Math.ceil((new Date(master.pro_expires_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} kun`}
-                              </span>
-                            )}
                           </div>
                         </td>
+
                         <td className="py-4 flex justify-end gap-2">
                           <button onClick={() => handleEditClick(master)} className="p-2 bg-[#231F1C] hover:bg-stone-800 rounded-lg text-stone-400 hover:text-white transition-colors">
                             <Edit2 className="w-4 h-4" />
