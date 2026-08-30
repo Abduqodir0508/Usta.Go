@@ -333,21 +333,21 @@ export function subscribeToPendingRequests(onRequestsChange) {
  * @returns {Promise<Object>} Yangilangan usta obyekti
  */
 export async function downgradeMasterIfExpired(master) {
-  if (!master || !master.is_pro) return master;
+  if (!master || !master.is_pro || !master.pro_expires_at) return master;
 
-  if (master.pro_expires_at) {
-    // Umrbod (lifetime) obunalar muddati tugamaydi (2099 bilan boshlanadi)
-    if (master.pro_expires_at.startsWith('2099')) {
-      return master;
-    }
+  const expStr = String(master.pro_expires_at || '');
 
-    const now = new Date();
-    const expiresAt = new Date(master.pro_expires_at);
-    if (now > expiresAt) {
-      console.log(`⚠️ Usta ID ${master.id} PRO obuna muddati tugagan. Downgrade bajarilmoqda...`);
-      const downgradedData = await executeDowngrade(master.id, master.portfolio);
-      return { ...master, ...downgradedData };
-    }
+  // Umrbod (lifetime) obunalar muddati tugamaydi (2099 bilan boshlanadi)
+  if (expStr.startsWith('2099')) {
+    return master;
+  }
+
+  const now = new Date();
+  const expiresAt = new Date(master.pro_expires_at);
+  if (now > expiresAt) {
+    console.log(`⚠️ Usta ID ${master.id} PRO obuna muddati tugagan. Downgrade bajarilmoqda...`);
+    const downgradedData = await executeDowngrade(master.id, master.portfolio);
+    return { ...master, ...downgradedData };
   }
 
   return master;

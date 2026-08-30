@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-
 import { downgradeMasterIfExpired } from "@/lib/proService";
 
 export interface UserProfile {
@@ -23,44 +22,73 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+
     const initUser = async () => {
       try {
-        const localMaster = localStorage.getItem("usta_current_master");
-        if (localMaster) {
-          let parsed = JSON.parse(localMaster);
+        const stored = typeof window !== "undefined" ? localStorage.getItem("usta_current_master") : null;
+        if (stored) {
+          let parsed: UserProfile | null = null;
+          try {
+            parsed = JSON.parse(stored);
+          } catch (e) {
+            parsed = null;
+          }
 
-          // Check if local data is expired
-          parsed = await downgradeMasterIfExpired(parsed);
-          setUser(parsed);
+          if (parsed) {
+            // Check if local data is expired safely
+            parsed = await downgradeMasterIfExpired(parsed);
+            if (isMounted) setUser(parsed);
 
-          if (parsed.id) {
-            const { data: dbData } = await supabase
-              .from("ustalar")
-              .select("*")
-              .eq("id", parsed.id)
-              .maybeSingle();
+            if (parsed.id) {
+              // Try fetching fresh data from Supabase (String ID)
+              let dbData: UserProfile | null = null;
+              const { data: d1 } = await supabase
+                .from("ustalar")
+                .select("*")
+                .eq("id", parsed.id)
+                .maybeSingle();
 
-            if (dbData) {
-              const updatedData = await downgradeMasterIfExpired(dbData);
-              setUser(updatedData);
-              localStorage.setItem("usta_current_master", JSON.stringify(updatedData));
+              dbData = d1;
+
+              // Fallback for Numeric ID if initial fetch returned null
+              if (!dbData && !isNaN(Number(parsed.id))) {
+                const { data: d2 } = await supabase
+                  .from("ustalar")
+                  .select("*")
+                  .eq("id", Number(parsed.id))
+                  .maybeSingle();
+                dbData = d2;
+              }
+
+              if (dbData && isMounted) {
+                const updatedData = await downgradeMasterIfExpired(dbData);
+                setUser(updatedData);
+                localStorage.setItem("usta_current_master", JSON.stringify(updatedData));
+              }
             }
           }
+        } else {
+          if (isMounted) setUser(null);
         }
       } catch (err) {
         console.error("useAuth init error:", err);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     initUser();
 
-    const handleStorageChange = () => initUser();
+    const handleStorageChange = () => {
+      initUser();
+    };
+
     window.addEventListener("storage", handleStorageChange);
     window.addEventListener("auth_changed", handleStorageChange);
 
     return () => {
+      isMounted = false;
       window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener("auth_changed", handleStorageChange);
     };
@@ -79,15 +107,16 @@ export function useAuth() {
           table: "ustalar",
           filter: `id=eq.${user.id}`,
         },
-        (payload) => {
-          console.log("Realtime status updated:", payload.new);
-          setUser((prev) => {
-            if (!prev) return (payload.new as UserProfile) || null;
-            const updated: UserProfile = { ...prev, ...payload.new };
-            localStorage.setItem("usta_current_master", JSON.stringify(updated));
-            window.dispatchEvent(new Event("auth_changed"));
-            return updated;
-          });
+        async (payload) => {
+          if (payload.new) {
+            console.log("Realtime status updated:", payload.new);
+            const freshData = await downgradeMasterIfExpired(payload.new as UserProfile);
+            setUser((prev) => {
+              const updated: UserProfile = { ...(prev || {}), ...freshData };
+              localStorage.setItem("usta_current_master", JSON.stringify(updated));
+              return updated;
+            });
+          }
         }
       )
       .subscribe();
