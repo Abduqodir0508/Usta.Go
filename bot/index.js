@@ -19,7 +19,14 @@ const PLAN_DETAILS = {
   '1m': { label: '1 Oylik PRO', amount: '1 000' },
   '3m': { label: '3 Oylik PRO (+1 oy bonus)', amount: '1 000' },
   '6m': { label: '6 Oylik PRO (+2 oy bonus)', amount: '1 000' },
-  'life': { label: 'Umrbod PRO (Lifetime)', amount: '1 000' }
+  'life': { label: 'Umrbod PRO (Lifetime)', amount: '1 000' },
+  '1_oylik': { label: '1 Oylik PRO', amount: '1 000' },
+  '3_oylik': { label: '3 Oylik PRO (+1 oy bonus)', amount: '1 000' },
+  '6_oylik': { label: '6 Oylik PRO (+2 oy bonus)', amount: '1 000' },
+  'lifetime': { label: 'Umrbod PRO (Lifetime)', amount: '1 000' },
+  '1_month': { label: '1 Oylik PRO', amount: '1 000' },
+  '3_months': { label: '3 Oylik PRO (+1 oy bonus)', amount: '1 000' },
+  '6_months': { label: '6 Oylik PRO (+2 oy bonus)', amount: '1 000' }
 };
 
 // Matnlar (3 tilda)
@@ -91,14 +98,20 @@ Wait <b>5-10 minutes</b>, our admins will verify and confirm your PRO status.
 
 // Start buyrug'i
 bot.start((ctx) => {
-  const payload = ctx.startPayload; // pay_PLAN_USERID
-  let selectedPlan = '1m';
+  const payload = ctx.startPayload; // e.g. pay:1_month:123 or pay_1_oylik_123
+  let selectedPlan = '1_month';
   let targetUserId = null;
 
-  if (payload && payload.startsWith('pay_')) {
-    const parts = payload.split('_');
-    selectedPlan = parts[1] || '1m';
-    targetUserId = parts[2] || null;
+  if (payload && (payload.startsWith('pay_') || payload.startsWith('pay:'))) {
+    if (payload.includes(':')) {
+      const parts = payload.split(':');
+      selectedPlan = parts[1] || '1_month';
+      targetUserId = parts[2] || null;
+    } else {
+      const parts = payload.split('_');
+      targetUserId = parts[parts.length - 1] || null;
+      selectedPlan = parts.slice(1, -1).join('_') || '1_month';
+    }
   }
 
   userSessions.set(ctx.from.id, {
@@ -110,7 +123,7 @@ bot.start((ctx) => {
 
   // Agar saytdan pay_ parametri bilan kirgan bo'lsa, to'g'ridan-to'g'ri to'lov ko'rsatmasini chiqarish
   if (payload) {
-    const details = PLAN_DETAILS[selectedPlan] || PLAN_DETAILS['1m'];
+    const details = PLAN_DETAILS[selectedPlan] || PLAN_DETAILS['1_month'] || PLAN_DETAILS['1m'];
     const t = texts['uz'];
     return ctx.reply(t.payment_info(details.label, details.amount), { parse_mode: 'HTML' });
   }
@@ -175,9 +188,9 @@ bot.on('photo', async (ctx) => {
   const session = userSessions.get(ctx.from.id);
   const photo = ctx.message.photo[ctx.message.photo.length - 1];
 
-  const plan = session?.plan || '1m';
-  const ustaId = session?.userId || 'Noma\'lum / Saytdan kirmagan';
-  const planDetails = PLAN_DETAILS[plan] || PLAN_DETAILS['1m'];
+  const plan = session?.plan || '1_month';
+  const ustaId = session?.userId || 'unknown';
+  const planDetails = PLAN_DETAILS[plan] || PLAN_DETAILS['1_month'] || PLAN_DETAILS['1m'];
 
   // Adminga chekni yuborish
   await ctx.telegram.sendPhoto(ADMIN_CHAT_ID, photo.file_id, {
@@ -185,8 +198,8 @@ bot.on('photo', async (ctx) => {
     parse_mode: 'HTML',
     ...Markup.inlineKeyboard([
       [
-        Markup.button.callback("✅ Tasdiqlash", `approve_${ustaId}_${plan}_${ctx.from.id}`),
-        Markup.button.callback("❌ Rad etish", `reject_${ustaId}_${ctx.from.id}`)
+        Markup.button.callback("✅ Tasdiqlash", `approve:${ustaId}:${plan}:${ctx.from.id}`),
+        Markup.button.callback("❌ Rad etish", `reject:${ustaId}:${ctx.from.id}`)
       ]
     ])
   });
@@ -198,26 +211,30 @@ bot.on('photo', async (ctx) => {
   return ctx.reply(replyMsg);
 });
 
-// Admin Tasdiqlash / Rad etish
-bot.action(/approve_(.+)_(.+)_(.+)/, async (ctx) => {
-  const [_, ustaId, plan, userTgId] = ctx.match;
+// Admin Tasdiqlash / Rad etish (approve handler)
+bot.action(/(?:approve_|approve:)(.+?)[_:]+(.+?)[_:]+(.+)/, async (ctx) => {
+  const ustaId = ctx.match[1];
+  const plan = ctx.match[2];
+  const userTgId = ctx.match[3];
+
+  console.log(`[Admin Approve Clicked] ustaId: "${ustaId}", plan: "${plan}", userTgId: "${userTgId}"`);
 
   // Plan nomini normallashtirish
   let normalizedPlan = '1_month';
   let expiresAt = new Date();
   let planLabel = "1 oylik";
 
-  if (plan === '1m' || plan === '1_oylik' || plan === '1_month') {
+  if (plan === '1m' || plan === '1_oylik' || plan === '1_month' || plan === '1') {
     normalizedPlan = '1_month';
-    expiresAt.setMonth(expiresAt.getMonth() + 1);
+    expiresAt.setDate(expiresAt.getDate() + 30);
     planLabel = "1 oylik";
-  } else if (plan === '3m' || plan === '3_oylik' || plan === '3_months') {
+  } else if (plan === '3m' || plan === '3_oylik' || plan === '3_months' || plan === '3') {
     normalizedPlan = '3_months';
-    expiresAt.setMonth(expiresAt.getMonth() + 4);
+    expiresAt.setDate(expiresAt.getDate() + 120);
     planLabel = "3 oylik (+1 oy bonus)";
-  } else if (plan === '6m' || plan === '6_oylik' || plan === '6_months') {
+  } else if (plan === '6m' || plan === '6_oylik' || plan === '6_months' || plan === '6') {
     normalizedPlan = '6_months';
-    expiresAt.setMonth(expiresAt.getMonth() + 8);
+    expiresAt.setDate(expiresAt.getDate() + 240);
     planLabel = "6 oylik (+2 oy bonus)";
   } else if (plan === 'life' || plan === 'lifetime') {
     normalizedPlan = 'lifetime';
@@ -227,41 +244,55 @@ bot.action(/approve_(.+)_(.+)_(.+)/, async (ctx) => {
 
   const nowIso = new Date().toISOString();
 
-  // Supabase ma'lumotlarini yangilash (Talab 3)
-  if (ustaId && ustaId !== "Noma'lum / Saytdan kirmagan") {
-    const updateData = {
-      is_pro: true,
-      is_verified: true,
-      pro_plan: normalizedPlan,
-      pro_started_at: nowIso,
-      pro_activated_at: nowIso,
-      pro_expires_at: expiresAt.toISOString(),
-      max_portfolio: 15,
-      banner_customization: true,
-      show_congrats_modal: true,
-      pro_modal_shown: false
-    };
+  const updateData = {
+    is_pro: true,
+    is_verified: true,
+    pro_plan: normalizedPlan,
+    pro_started_at: nowIso,
+    pro_activated_at: nowIso,
+    pro_expires_at: expiresAt.toISOString(),
+    max_portfolio: 15,
+    banner_customization: true,
+    show_congrats_modal: true,
+    pro_modal_shown: false
+  };
 
+  // Supabase'da yangilash (string ID va integer ID uchun)
+  let numericId = !isNaN(ustaId) ? parseInt(ustaId, 10) : null;
+
+  if (ustaId && ustaId !== "Noma'lum / Saytdan kirmagan" && ustaId !== "unknown" && ustaId !== "oylik") {
     try {
       await supabase.from('ustalar').update(updateData).eq('id', ustaId);
+      if (numericId) await supabase.from('ustalar').update(updateData).eq('id', numericId);
     } catch (e) {
       console.error("Error updating ustalar table:", e);
     }
 
     try {
       await supabase.from('profiles').update(updateData).eq('id', ustaId);
+      if (numericId) await supabase.from('profiles').update(updateData).eq('id', numericId);
     } catch (e) {
       console.error("Error updating profiles table:", e);
     }
 
     try {
       await supabase.from('users').update(updateData).eq('id', ustaId);
+      if (numericId) await supabase.from('users').update(updateData).eq('id', numericId);
     } catch (e) {
       console.error("Error updating users table:", e);
     }
   }
 
-  // Ustaga xabar yuborish (Talab 3)
+  // Fallback: Agar usta ID orqali topilmagan bo'lsa yoki saytdan kirmasdan yuborgan bo'lsa, Telegram username orqali yangilaymiz
+  if (ctx.from?.username) {
+    try {
+      const cleanUsername = ctx.from.username.replace('@', '').trim();
+      await supabase.from('ustalar').update(updateData).ilike('telegram', `%${cleanUsername}%`);
+      await supabase.from('profiles').update(updateData).ilike('telegram', `%${cleanUsername}%`);
+    } catch (e) {}
+  }
+
+  // Ustaga xabar yuborish
   try {
     const msg = `✅ <b>To'lovingiz tasdiqlandi! UstaGo PRO versiya faollashdi.</b>\n\n📦 Tanlangan tarif: <b>${planLabel}</b>\n\nSaytga kirib sahifani yangilang (refresh).\n\n<i>Eslatma: Obunangiz tugashiga 5 kun qolganida sizga avtomatik eslatma xabari yuboramiz.</i>\n\n👨‍💻 <i>Admin / Bog'lanish:</i> @A_Husanboyev`;
     await ctx.telegram.sendMessage(userTgId, msg, { parse_mode: 'HTML' });

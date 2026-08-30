@@ -15,7 +15,8 @@ export default function ProPricingModal({ onClose, onSuccess, masterData }: ProP
 
   const handleSelectPlan = (name: string) => {
     // Navigate directly to telegram bot
-    const botUrl = `https://t.me/UstaGo_pro_bot?start=pay_${encodeURIComponent(name)}_${masterData?.id || "unknown"}`;
+    const targetId = masterData?.id || "unknown";
+    const botUrl = `https://t.me/UstaGo_pro_bot?start=pay:${encodeURIComponent(name)}:${targetId}`;
     window.open(botUrl, '_blank');
     onClose();
   };
