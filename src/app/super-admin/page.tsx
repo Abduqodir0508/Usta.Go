@@ -86,7 +86,7 @@ export default function SuperAdminPage() {
   const handleAddMaster = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.category || !formData.phone || !formData.login || !formData.password || !formData.city || !formData.district) {
-      alert("Iltimos, barcha majburiy maydonlarni (shu jumladan Shahar va Tumanni) to'ldiring!");
+      alert("Iltimos, barcha majburiy maydonlarni (Ism, Kategoriya, Telefon, Shahar, Tuman, Login va Parol) to'ldiring!");
       return;
     }
 
@@ -99,30 +99,83 @@ export default function SuperAdminPage() {
       }
 
       const fullAddress = `${formData.city}, ${formData.district}${formData.address ? `, ${formData.address}` : ""}`;
+      const numPrice = formData.price ? Number(formData.price) : 0;
+      const cleanTelegram = (formData.telegram || "").replace('@', '').trim();
 
-      const newMaster = {
+      const primaryPayload: any = {
         name: formData.name,
-        category: formData.category,
+        full_name: formData.name,
+        category: formData.category || "santexnik",
         phone: formData.phone,
-        telegram: formData.telegram,
+        telegram: formData.telegram || "",
+        telegram_username: cleanTelegram,
         city: formData.city,
         district: formData.district,
         address: fullAddress,
-        price: formData.price ? parseInt(formData.price) : 0,
+        price: numPrice,
+        starting_price: numPrice,
         login: formData.login,
         password: formData.password,
         avatar_url: avatarUrl || null,
+        image: avatarUrl || null,
         is_pro: false,
         pro_plan: null,
         pro_expires_at: null,
+        portfolio: [],
         is_banned: false
       };
 
-      const { data, error } = await supabase.from('ustalar').insert([newMaster]).select();
-      
-      if (error) throw error;
-      
-      if (data) {
+      console.log("Supabase Insert Payload:", primaryPayload);
+
+      let { data, error } = await supabase.from('ustalar').insert([primaryPayload]).select();
+
+      // If schema mismatch occurs, retry with sanitized fallback payload
+      if (error) {
+        console.warn("Primary Supabase insert failed, attempting fallback payload:", error);
+
+        // Fallback A: Standard minimal payload
+        const fallbackPayload: any = {
+          name: formData.name,
+          category: formData.category || "santexnik",
+          phone: formData.phone,
+          telegram: formData.telegram || "",
+          address: fullAddress,
+          city: formData.city,
+          district: formData.district,
+          price: numPrice,
+          login: formData.login,
+          password: formData.password,
+          avatar_url: avatarUrl || null,
+          is_pro: false,
+          portfolio: [],
+          is_banned: false
+        };
+
+        const res2 = await supabase.from('ustalar').insert([fallbackPayload]).select();
+        if (res2.data) {
+          data = res2.data;
+          error = null;
+        } else if (res2.error) {
+          // Fallback B: Strip city and district if those specific columns do not exist in table
+          delete fallbackPayload.city;
+          delete fallbackPayload.district;
+          const res3 = await supabase.from('ustalar').insert([fallbackPayload]).select();
+          if (res3.data) {
+            data = res3.data;
+            error = null;
+          } else {
+            error = res3.error || res2.error || error;
+          }
+        }
+      }
+
+      if (error) {
+        console.error("Supabase Insert Error:", error);
+        alert(`Xatolik: ${error.message || error.details || error.hint || JSON.stringify(error) || "Noma'lum xatolik"}`);
+        return;
+      }
+
+      if (data && data.length > 0) {
         setMastersList([data[0], ...mastersList]);
         setFormData({ name: "", category: "", phone: "", telegram: "", city: "Toshkent shahri", district: "Yunusobod tumani", address: "", price: "", login: "", password: "" });
         setAvatarFile(null);
@@ -133,9 +186,9 @@ export default function SuperAdminPage() {
           setActiveTab("masters");
         }, 2000);
       }
-    } catch (error: any) {
-      console.error("Xatolik yuz berdi:", error);
-      alert('Ma\'lumotlarni saqlashda xatolik yuz berdi!');
+    } catch (err: any) {
+      console.error("Supabase Insert Exception:", err);
+      alert(`Xatolik: ${err?.message || err?.details || JSON.stringify(err) || "Noma'lum xatolik"}`);
     } finally {
       setIsUploading(false);
     }
