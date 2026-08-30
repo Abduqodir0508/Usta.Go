@@ -6,10 +6,20 @@ const { createClient } = require('@supabase/supabase-js');
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8845833064:AAHB1nASi0Cwq8rZUQhvor008OX6dtQA4as';
 const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID || '2067464475';
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://qmslmdtccekopxmgjkse.supabase.com';
-const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_1iSPG6Kz2mC5T1SKG8vkEw_sIa1ssBW';
+
+// Service Role Key support for RLS bypass (if present in env)
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_1iSPG6Kz2mC5T1SKG8vkEw_sIa1ssBW';
 
 const bot = new Telegraf(BOT_TOKEN);
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: { persistSession: false }
+});
+
+if (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY) {
+  console.log('[Supabase Client] Service Role Key is active. RLS bypassed for admin bot backend.');
+} else {
+  console.log('[Supabase Client] Public Anon Key is active.');
+}
 
 // Foydalanuvchi holatlari (In-Memory)
 const userSessions = new Map();
@@ -217,7 +227,12 @@ bot.action(/(?:approve_|approve:)(.+?)[_:]+(.+?)[_:]+(.+)/, async (ctx) => {
   const plan = ctx.match[2];
   const userTgId = ctx.match[3];
 
-  console.log(`[Admin Approve Clicked] ustaId: "${ustaId}", plan: "${plan}", userTgId: "${userTgId}"`);
+  console.log(`\n====================================================`);
+  console.log(`[Admin Approve Clicked]`);
+  console.log(`  - Target ustaId: "${ustaId}"`);
+  console.log(`  - Target plan: "${plan}"`);
+  console.log(`  - Sender userTgId: "${userTgId}"`);
+  console.log(`  - Sender Telegram Username: "@${ctx.from?.username || 'yo\'q'}"`);
 
   // Plan nomini normallashtirish
   let normalizedPlan = '1_month';
@@ -257,40 +272,88 @@ bot.action(/(?:approve_|approve:)(.+?)[_:]+(.+?)[_:]+(.+)/, async (ctx) => {
     pro_modal_shown: false
   };
 
-  // Supabase'da yangilash (string ID va integer ID uchun)
-  let numericId = !isNaN(ustaId) ? parseInt(ustaId, 10) : null;
+  console.log(`  - Supabase Update Payload:`, JSON.stringify(updateData, null, 2));
 
+  let updatedRowsCount = 0;
+  let updatedMasterRecord = null;
+
+  // STEP 1: Try update by ID (String & Integer)
   if (ustaId && ustaId !== "Noma'lum / Saytdan kirmagan" && ustaId !== "unknown" && ustaId !== "oylik") {
+    console.log(`🔍 [Step 1] Supabase 'ustalar' jadvalidan ID bo'yicha qidirilmoqda: "${ustaId}"`);
+
+    // A. String ID
     try {
-      await supabase.from('ustalar').update(updateData).eq('id', ustaId);
-      if (numericId) await supabase.from('ustalar').update(updateData).eq('id', numericId);
+      const { data, error } = await supabase.from('ustalar').update(updateData).eq('id', ustaId).select();
+      console.log(`  - Result eq('id', '${ustaId}'):`, { count: data?.length || 0, data, error });
+      if (data && data.length > 0) {
+        updatedRowsCount += data.length;
+        updatedMasterRecord = data[0];
+      }
     } catch (e) {
-      console.error("Error updating ustalar table:", e);
+      console.error(`  - Error searching by string ID:`, e);
     }
 
-    try {
-      await supabase.from('profiles').update(updateData).eq('id', ustaId);
-      if (numericId) await supabase.from('profiles').update(updateData).eq('id', numericId);
-    } catch (e) {
-      console.error("Error updating profiles table:", e);
-    }
-
-    try {
-      await supabase.from('users').update(updateData).eq('id', ustaId);
-      if (numericId) await supabase.from('users').update(updateData).eq('id', numericId);
-    } catch (e) {
-      console.error("Error updating users table:", e);
+    // B. Numeric ID if applicable
+    if (updatedRowsCount === 0 && !isNaN(ustaId)) {
+      const numId = parseInt(ustaId, 10);
+      console.log(`🔍 [Step 1B] Supabase 'ustalar' jadvalidan Numeric ID bo'yicha qidirilmoqda: ${numId}`);
+      try {
+        const { data, error } = await supabase.from('ustalar').update(updateData).eq('id', numId).select();
+        console.log(`  - Result eq('id', ${numId}):`, { count: data?.length || 0, data, error });
+        if (data && data.length > 0) {
+          updatedRowsCount += data.length;
+          updatedMasterRecord = data[0];
+        }
+      } catch (e) {
+        console.error(`  - Error searching by numeric ID:`, e);
+      }
     }
   }
 
-  // Fallback: Agar usta ID orqali topilmagan bo'lsa yoki saytdan kirmasdan yuborgan bo'lsa, Telegram username orqali yangilaymiz
-  if (ctx.from?.username) {
+  // STEP 2: Try search & update by clean Telegram Username
+  if (updatedRowsCount === 0 && ctx.from?.username) {
+    const cleanUsername = ctx.from.username.replace('@', '').trim().toLowerCase();
+    console.log(`🔍 [Step 2] ID bo'yicha topilmadi. Telegram username bo'yicha qidirilmoqda: "${cleanUsername}"`);
+
     try {
-      const cleanUsername = ctx.from.username.replace('@', '').trim();
-      await supabase.from('ustalar').update(updateData).ilike('telegram', `%${cleanUsername}%`);
-      await supabase.from('profiles').update(updateData).ilike('telegram', `%${cleanUsername}%`);
+      const { data, error } = await supabase.from('ustalar').update(updateData).ilike('telegram', `%${cleanUsername}%`).select();
+      console.log(`  - Result ilike('telegram', '%${cleanUsername}%'):`, { count: data?.length || 0, data, error });
+      if (data && data.length > 0) {
+        updatedRowsCount += data.length;
+        updatedMasterRecord = data[0];
+      }
+    } catch (e) {
+      console.error(`  - Error searching by telegram username:`, e);
+    }
+  }
+
+  // STEP 3: Try search & update by Telegram ID (telegram_id)
+  if (updatedRowsCount === 0 && userTgId) {
+    console.log(`🔍 [Step 3] Telegram ID bo'yicha qidirilmoqda: "${userTgId}"`);
+    try {
+      const { data, error } = await supabase.from('ustalar').update(updateData).eq('telegram_id', userTgId).select();
+      console.log(`  - Result eq('telegram_id', '${userTgId}'):`, { count: data?.length || 0, data, error });
+      if (data && data.length > 0) {
+        updatedRowsCount += data.length;
+        updatedMasterRecord = data[0];
+      }
     } catch (e) {}
   }
+
+  // Sync update to profiles and users tables as well
+  if (updatedMasterRecord?.id || ustaId) {
+    const syncId = updatedMasterRecord?.id || ustaId;
+    try { await supabase.from('profiles').update(updateData).eq('id', syncId).select(); } catch (e) {}
+    try { await supabase.from('users').update(updateData).eq('id', syncId).select(); } catch (e) {}
+  }
+
+  // Check result & output explicit log
+  if (updatedRowsCount === 0) {
+    console.log(`❌ XATOLIK: Usta bazadan topilmadi! (Qidirilgan: ustaId="${ustaId}", username="@${ctx.from?.username || 'yo\'q'}", tgId="${userTgId}")`);
+  } else {
+    console.log(`✅ MUVAFFAQIYATLI: ${updatedRowsCount} ta usta PRO versiyaga o'tkazildi! (Usta Name: "${updatedMasterRecord?.name}", ID: ${updatedMasterRecord?.id})`);
+  }
+  console.log(`====================================================\n`);
 
   // Ustaga xabar yuborish
   try {
@@ -300,7 +363,12 @@ bot.action(/(?:approve_|approve:)(.+?)[_:]+(.+?)[_:]+(.+)/, async (ctx) => {
     console.error("User Telegram send error:", e);
   }
 
-  return ctx.editMessageCaption(ctx.callbackQuery.message.caption + "\n\n<b>✅ ADMIN TOMONIDAN TASDIQLANDI!</b>", { parse_mode: 'HTML' });
+  try {
+    await ctx.answerCbQuery(updatedRowsCount > 0 ? "PRO status muvaffaqiyatli faollashtirildi! ✅" : "Diqqat: Usta bazadan topilmadi ⚠️");
+  } catch (e) {}
+
+  const statusNote = updatedRowsCount > 0 ? "\n\n<b>✅ ADMIN TOMONIDAN TASDIQLANDI!</b>" : "\n\n<b>⚠️ TASDIQLANDI (Lekin bazadan usta topilmadi)</b>";
+  return ctx.editMessageCaption((ctx.callbackQuery?.message?.caption || "") + statusNote, { parse_mode: 'HTML' });
 });
 
 // Direct PRO verification handler
